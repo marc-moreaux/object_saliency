@@ -1,21 +1,21 @@
+from util import load_image
 import tensorflow as tf
 import pandas as pd
 import numpy as np
 
 from detector import Detector
-from util import load_image
 
 import skimage.io
 import matplotlib.pyplot as plt
 
 import os
-import ipdb
+# import ipdb
 
-testset_path = '../data/caltech/test.pickle'
-label_dict_path = '../data/caltech/label_dict.pickle'
+testset_path = '/home/mmoreaux/datasets/caltech/test.pickle'
+label_dict_path = '/home/mmoreaux/datasets/caltech/label_dict.pickle'
 
-weight_path = '../data/caffe_layers_value.pickle'
-model_path = '../models/caltech256/model-4'
+weight_path = '../caffe_layers_value.pickle'
+model_path = '../models/caltech256/model-2'
 
 batch_size = 1
 
@@ -35,49 +35,51 @@ saver = tf.train.Saver()
 
 saver.restore( sess, model_path )
 
-for start, end in zip(
-    range( 0, len(testset)+batch_size, batch_size),
-    range(batch_size, len(testset)+batch_size, batch_size)):
 
+
+for start, end in zip(
+    list(range( 0, len(testset)+batch_size, batch_size)),
+    list(range(batch_size, len(testset)+batch_size, batch_size))):
+    
     current_data = testset[start:end]
     current_image_paths = current_data['image_path'].values
-    current_images = np.array(map(lambda x: load_image(x), current_image_paths))
-
-    good_index = np.array(map(lambda x: x is not None, current_images))
-
+    current_images = np.array([load_image(x) for x in current_image_paths])
+    
+    good_index = np.array([x is not None for x in current_images])
+    
     current_data = current_data[good_index]
     current_image_paths = current_image_paths[good_index]
     current_images = np.stack(current_images[good_index])
     current_labels = current_data['label'].values
     current_label_names = current_data['label_name'].values
-
+    
     conv6_val, output_val = sess.run(
             [conv6, output],
             feed_dict={
                 images_tf: current_images
                 })
-
+    
     label_predictions = output_val.argmax( axis=1 )
     acc = (label_predictions == current_labels).sum()
-
+    
     classmap_vals = sess.run(
             classmap,
             feed_dict={
                 labels_tf: label_predictions,
                 conv6: conv6_val
                 })
-
+    
     classmap_answer = sess.run(
             classmap,
             feed_dict={
                 labels_tf: current_labels,
                 conv6: conv6_val
                 })
-
-    classmap_vis = map(lambda x: ((x-x.min())/(x.max()-x.min())), classmap_answer)
-
+    
+    classmap_vis = [((x-x.min())/(x.max()-x.min())) for x in classmap_answer]
+    
     for vis, ori,ori_path, l_name in zip(classmap_vis, current_images, current_image_paths, current_label_names):
-        print l_name
+        print(l_name)
         plt.imshow( ori )
         plt.imshow( vis, cmap=plt.cm.jet, alpha=0.5, interpolation='nearest' )
         plt.show()
