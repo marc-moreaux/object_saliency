@@ -5,19 +5,18 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+from os import listdir
+from os.path import isfile, join
+
 
 
 # Declare paths
 model_label_path = "../models/caltech_labels.pkl"
 weight_path = '../caffe_layers_value.pickle'
-model_path = '../models/caltech256/model-3'
+model_path = '../models/caltech256/model-2'
+jpg_folder_path = "../img_test"
 
-imgs = [
-"/home/mmoreaux/datasets/caltech256/005.baseball-glove/005_0008.jpg", "/home/mmoreaux/datasets/caltech256/005.baseball-glove/005_0011.jpg",
-"/home/mmoreaux/datasets/caltech256/005.baseball-glove/005_0014.jpg", "/home/mmoreaux/datasets/caltech256/041.coffee-mug/041_0004.jpg",
-"/home/mmoreaux/datasets/caltech256/041.coffee-mug/041_0005.jpg",     "/home/mmoreaux/datasets/caltech256/041.coffee-mug/041_0006.jpg",
-"/home/mmoreaux/datasets/caltech256/041.coffee-mug/041_0007.jpg",     "/home/mmoreaux/datasets/caltech256/041.coffee-mug/041_0008.jpg" ]
-
+imgPath = [join(jpg_folder_path, f) for f in listdir(jpg_folder_path) if isfile(join(jpg_folder_path, f))]
 
 # load the caltech model
 f = open(model_label_path,"rb")
@@ -68,6 +67,6 @@ for idx,imgP in enumerate(imgPath):
         plt.imshow( ori )
         plt.imshow( vis, cmap=plt.cm.jet, alpha=0.5, interpolation='nearest' )
         # plt.show()
-        plt.savefig('result'+str(idx)+'.png')
+        plt.savefig('../img_results/img'+str(idx)+'.png')
 
 
