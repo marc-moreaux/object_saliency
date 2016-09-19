@@ -10,16 +10,18 @@ import model_param
 from forward_model import Forward_model
 from time import sleep
 import numpy as np
+import os
 
 ######################################
 ###  Parameter
 ######################################
 mod_param  = model_param.Model_params("PERSO", "VGG16_CAM_S", 'rmsProp', 0.00001)
-PEPPER_IP = "10.0.165.29"  # jmot.local
-PEPPER_IP = "10.0.160.236" # jarc.local
-LOCAL_IP  = "10.0.164.204"
+PEPPER_IP  = "10.0.165.29"  # jmot.local
+PEPPER_IP  = "10.0.160.236" # jarc.local
+LOCAL_IP   = "10.0.164.204"
+LOCAL_PORT = 8081
 LOCAL_SERVER = "http://"+LOCAL_IP+":8081/"
-LOCAL_SERVER_FOLDER = '/home/cuda/work/cm_perso/py/image_server/'
+LOCAL_SERVER_FOLDER = './image_server/'
 
 
 ######################################
@@ -37,10 +39,15 @@ led           = ALProxy("ALLeds" , PEPPER_IP, 9559)
 
 ######################################
 ### To visualize on pepper,
-###  launch an HTTP server in :
-###  /home/cuda/work/cm_perso/py/image_server
-###  $ python2 -m SimpleHTTPServer 8081
+###  launch an HTTP server
 ######################################
+import SimpleHTTPServer
+import SocketServer
+import threading
+
+Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+httpd = SocketServer.TCPServer(("localhost", LOCAL_PORT), Handler)
+httpThread = threading.Thread(target=httpd.serve_forever).start()
 
 
 
