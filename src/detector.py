@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
+import model_param
 # import ipdb
 
 class Detector():
@@ -10,12 +11,16 @@ class Detector():
   n_labels   : nb of labels
   pretrained_weights : weights from VGG or pretrained model
   '''
-  def __init__(self, weight_file_path, n_labels):
-      self.image_mean = [103.939, 116.779, 123.68]
-      self.n_labels = n_labels
+  def __init__(self, mod_param):
+      self.image_mean  = [103.939, 116.779, 123.68]
+      self.mod_param   = mod_param
+      self.n_labels    = mod_param.n_labels
+      weight_file_path ='../caffe_layers_value.pickle'
+      
 
       with open(weight_file_path,'rb') as f:
-          self.pretrained_weights = pickle.load(f,encoding='latin1')
+          # self.pretrained_weights = pickle.load(f,encoding='latin1')
+          self.pretrained_weights = pickle.load(f)
 
   def get_weight( self, layer_name):
       layer = self.pretrained_weights[layer_name]
@@ -151,18 +156,40 @@ class Detector():
       conv5_2 = self.conv_layer( conv5_1, "conv5_2")
       conv5_3 = self.conv_layer( conv5_2, "conv5_3")
 
-      conv6 = self.new_conv_layer( conv5_3, [3,3,512,1024], "conv6")
-      gap   = tf.reduce_mean( conv6, [1,2] )
+      ###################################
+      # If the model is VGG 
+      if self.mod_param.mod_type == model_param.Model_type.VGG16 :
+        pool5   = tf.nn.max_pool(conv5_3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
+                             padding='SAME', name='pool')
+        fc6     = self.new_fc_layer( pool5, 1024,          'fc6' )
+        fc7     = self.new_fc_layer( pool5, 1024,          'fc7' )
+        fc8     = self.new_fc_layer( pool5, self.n_labels, 'fc8' )
+        output  = fc8
+        return pool1, pool2, pool3, pool4, conv5_3, None, None, output
 
-      with tf.variable_scope("GAP"):
-          gap_w = tf.get_variable(
-                  "W",
-                  shape=[1024, self.n_labels],
-                  initializer=tf.random_normal_initializer(0., 0.01))
+      ###################################
+      # If the model is VGG16_CAM_W_S
+      if self.mod_param.mod_type == model_param.Model_type.VGG16_CAM_W_S :
+        conv6 = self.new_conv_layer( conv5_3, [3,3,512,1024], "conv6")
+        gap   = tf.reduce_mean( conv6, [1,2] )
+        with tf.variable_scope("GAP"):
+            gap_w = tf.get_variable(
+                    "W",
+                    shape=[1024, self.n_labels],
+                    initializer=tf.random_normal_initializer(0., 0.01))
+        output = tf.matmul( gap, gap_w)
+        return pool1, pool2, pool3, pool4, conv5_3, conv6, gap, output
 
-      output = tf.matmul( gap, gap_w)
 
-      return pool1, pool2, pool3, pool4, conv5_3, conv6, gap, output
+      ###################################
+      # If the model is VGG16_CAM_S
+      if self.mod_param.mod_type == model_param.Model_type.VGG16_CAM_S :
+        conv6 = self.new_conv_layer( conv5_3, [3,3,512,self.n_labels], "conv6")
+        gap   = tf.reduce_mean( conv6, [1,2] )
+        output = gap
+        return pool1, pool2, pool3, pool4, conv5_3, conv6, gap, output
+
+      
 
   def get_classmap(self, label, conv6):
       conv6_resized = tf.image.resize_bilinear( conv6, [224, 224] )
@@ -184,26 +211,6 @@ class Detector():
     for idx,graph in enumerate(ax.flatten()):
         graph.imshow(w[idx])
     plt.show()
-
-
-
-
-
-# import pickle
-# m_vars = tf.all_variables()
-# weights = {}
-# for var in m_vars:
-#   weights[var.name] = var.eval()
-
-# with open('weights.pkl','wb') as f:
-#   pickle.dump(weights, f, pickle.HIGHEST_PROTOCOL)
-
-
-# w = np.swapaxes(weights['conv1_1/W:0'],0,3)
-# b = weights['conv1_1/b:0']
-# conv1 = np.ndarray((64,224,224))
-# for idx in range(64):
-#   conv1[idx] = sg.convolve(img, w[idx], "same")[:,:,1]
 
 
 
