@@ -408,7 +408,7 @@ def reshape_vis(vis, index):
     print vis.max()
     vis  = vis * (vis>0) # ReLu
     vis  = np.minimum(vis,max_val)
-    vis /= mav_val
+    vis /= max_val
     vis  = resize(vis,[224,224])
     return vis
 
