@@ -397,8 +397,10 @@ colors = RGB_tuples
 
 
 
-
-
+def print_sorted_preds(named_preds):
+    for name, p in sorted(named_preds, key=lambda a:a[1])[-5:]:
+        print "%-15s %3.3f"%(name,p)
+    print '--'
 
 
 def reshape_vis(vis, index):
@@ -419,7 +421,7 @@ img = vStream.getFrame()
 img = my_images.crop_from_center(img)
 img = resize(img, [224,224])
 named_preds, vis = model.forward_image(img,-1)
-vis = reshape_vis(vis, model.mod_param.labels.index("people"))
+vis = reshape_vis(vis, model.mod_param.labels.index("head-phones"))
 
 # First plot
 fig, ax = plt.subplots(1,1)
@@ -433,13 +435,18 @@ def updatefig(*args):
     img = my_images.crop_from_center(img)
     img = resize(img, [224,224])
     named_preds, vis = model.forward_image(img,-1)
-    vis = reshape_vis(vis, model.mod_param.labels.index("people"))
+    vis = reshape_vis(vis, model.mod_param.labels.index("head-phones"))
     
     # Update the axis
     im1.set_array(img)
     im2.set_array(vis)
     
+    
+    
     return im1, im2
 
 ani1 = animation.FuncAnimation(fig, updatefig, interval=10, blit=False)
 fig.show()
+
+
+
