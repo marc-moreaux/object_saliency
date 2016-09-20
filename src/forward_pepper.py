@@ -16,7 +16,7 @@ import os
 ######################################
 ###  Parameter
 ######################################
-mod_param  = model_param.Model_params('PERSO', "VGG16_CAM_W_S", 'rmsProp', 0.00001)
+mod_param  = model_param.Model_params('PERSO', "VGG16P_CAM5_S", 'rmsProp', 0.000008, True)
 PEPPER_IP  = "10.0.165.29"  # jmot.local
 PEPPER_IP  = "10.0.160.236" # jarc.local
 LOCAL_IP   = "10.0.164.160"
@@ -51,7 +51,7 @@ led           = ALProxy("ALLeds"         , PEPPER_IP, 9559)
 ######################################
 # Load tensorflow's caltech model
 ######################################
-model = Forward_model(mod_param, 24)
+model = Forward_model(mod_param, 19)
 
 
 
@@ -415,18 +415,11 @@ def reshape_vis(vis, index):
 # ######################################
 # ### Plotting time !!
 # ######################################
-# Retrieve the predictions
-# def forward_one_image():
 img = vStream.getFrame()
 img = my_images.crop_from_center(img)
 img = resize(img, [224,224])
 named_preds, vis = model.forward_image(img,-1)
-vis = reshape_vis(vis, model.mod_param.labels.index("coffee-mug"))
-
-# argmax = np.array([p[1] for p in named_preds]).argmax()
-# vis    = reshape_vis(vis, argmax)
-# print  named_preds[argmax]
-
+vis = reshape_vis(vis, model.mod_param.labels.index("people"))
 
 # First plot
 fig, ax = plt.subplots(1,1)
@@ -440,24 +433,13 @@ def updatefig(*args):
     img = my_images.crop_from_center(img)
     img = resize(img, [224,224])
     named_preds, vis = model.forward_image(img,-1)
-    # argmax = np.array([p[1] for p in named_preds]).argmax()
-    # vis = reshape_vis(vis, argmax)
-    # vis  = vis[0,:,:,model.mod_param.labels.index("coffee-mug")]
-    # print  named_preds[argmax]
-    vis = reshape_vis(vis, model.mod_param.labels.index("coffee-mug"))
+    vis = reshape_vis(vis, model.mod_param.labels.index("people"))
     
     # Update the axis
     im1.set_array(img)
     im2.set_array(vis)
     
-    # Upload to pepper
-    # fig.savefig( LOCAL_SERVER_FOLDER+'new.jpg' )
-    # tabletService.showImageNoCache("http://10.0.164.204:8081/new.jpg")
     return im1, im2
-    # return ims1[0],ims2[0],ims1[1],ims2[1],ims1[2],ims2[2],ims1[3],ims2[3],ims1[4],ims2[4]
-    # return ims1[0],ims2[0],ims1[1],ims2[1],ims1[2],ims2[2],ims1[3],ims2[3],ims1[4],ims2[4],ims1[5],ims2[5],ims1[6],ims2[6],ims1[7],ims2[7],ims1[8],ims2[8],ims1[9],ims2[9],ims1[10],ims2[10],ims1[11],ims2[11],ims1[12],ims2[12],ims1[13],ims2[13],ims1[14],ims2[14],ims1[15],ims2[15],ims1[16],ims2[16],ims1[17],ims2[17],ims1[18],ims2[18],ims1[19],ims2[19],ims1[20],ims2[20],ims1[21],ims2[21],ims1[22],ims2[22],ims1[23],ims2[23],ims1[24],ims2[24],ims1[25],ims2[25],ims1[26],ims2[26],ims1[27],ims2[27],ims1[28],ims2[28],ims1[29],ims2[29],ims1[30],ims2[30],ims1[31],ims2[31],ims1[32],ims2[32],ims1[33],ims2[33],ims1[34],ims2[34],ims1[35],ims2[35],ims1[36],ims2[36],ims1[37],ims2[37],ims1[38],ims2[38],ims1[39],ims2[39],ims1[40],ims2[40],ims1[41],ims2[41],ims1[42],ims2[42],ims1[43],ims2[43],ims1[44],ims2[44],ims1[45],ims2[45],ims1[46],ims2[46],ims1[47],ims2[47],ims1[48],ims2[48],ims1[49],ims2[49],ims1[50],ims2[50],ims1[51],ims2[51],ims1[52],ims2[52],ims1[53],ims2[53],ims1[54],ims2[54],ims1[55],ims2[55],ims1[56],ims2[56],ims1[57],ims2[57],ims1[58],ims2[58],ims1[59],ims2[59],ims1[60],ims2[60],ims1[61],ims2[61],ims1[62],ims2[62]
 
 ani1 = animation.FuncAnimation(fig, updatefig, interval=10, blit=False)
-# tabletService.loadUrl(LOCAL_SERVER+"imageViewer.html")
-# tabletService.showWebview()
 fig.show()
