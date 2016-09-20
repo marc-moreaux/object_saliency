@@ -16,7 +16,7 @@ import os
 ######################################
 ###  Parameter
 ######################################
-mod_param  = model_param.Model_params('PERSO', "VGG16P_CAM5_S", 'rmsProp', 0.000008, True)
+mod_param  = model_param.Model_params('PERSO', "VGG16_CAM7_S", 'rmsProp', 0.000008, True)
 PEPPER_IP  = "10.0.165.29"  # jmot.local
 PEPPER_IP  = "10.0.160.236" # jarc.local
 LOCAL_IP   = "10.0.164.160"
@@ -51,7 +51,7 @@ led           = ALProxy("ALLeds"         , PEPPER_IP, 9559)
 ######################################
 # Load tensorflow's caltech model
 ######################################
-model = Forward_model(mod_param, 19)
+model = Forward_model(mod_param, 10)
 
 
 
@@ -404,10 +404,11 @@ def print_sorted_preds(named_preds):
 
 
 def reshape_vis(vis, index):
-    max_val = 10
+    max_val = 20
     if len(vis.shape)>3:
         vis  = vis[0,:,:,index]
     print vis.max()
+    vis += 0
     vis  = vis * (vis>0) # ReLu
     vis  = np.minimum(vis,max_val)
     vis /= max_val
@@ -421,7 +422,7 @@ img = vStream.getFrame()
 img = my_images.crop_from_center(img)
 img = resize(img, [224,224])
 named_preds, vis = model.forward_image(img,-1)
-vis = reshape_vis(vis, model.mod_param.labels.index("head-phones"))
+vis = reshape_vis(vis, model.mod_param.labels.index("people"))
 
 # First plot
 fig, ax = plt.subplots(1,1)
@@ -435,13 +436,14 @@ def updatefig(*args):
     img = my_images.crop_from_center(img)
     img = resize(img, [224,224])
     named_preds, vis = model.forward_image(img,-1)
-    vis = reshape_vis(vis, model.mod_param.labels.index("head-phones"))
+    tmp = vis[0,:,:,model.mod_param.labels.index("people")]
+    print "min %2.3f, max %2.3f, mean %2.3f"%(tmp.min(),tmp.max(),tmp.mean())
+    vis = reshape_vis(vis, model.mod_param.labels.index("people"))
     
     # Update the axis
     im1.set_array(img)
     im2.set_array(vis)
-    
-    
+       
     
     return im1, im2
 
