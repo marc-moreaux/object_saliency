@@ -184,8 +184,17 @@ class Detector():
       ###################################
       # If the model is VGG16_CAM_S
       if self.mod_param.mod_type == model_param.Model_type.VGG16_CAM_S :
-        conv6 = self.new_conv_layer( conv5_3, [3,3,512,self.n_labels], "conv6")
-        gap   = tf.reduce_mean( conv6, [1,2] )
+        conv6  = self.new_conv_layer( conv5_3, [3,3,512,self.n_labels], "conv6")
+        gap    = tf.reduce_mean( conv6, [1,2] )
+        output = gap
+        return pool1, pool2, pool3, pool4, conv5_3, conv6, gap, output
+
+
+      ###################################
+      # If the model is VGG16_CAM7_S
+      if self.mod_param.mod_type == model_param.Model_type.VGG16_CAM7_S :
+        conv6  = self.new_conv_layer( conv5_3, [7,7,512,self.n_labels], "conv6")
+        gap    = tf.reduce_mean( conv6, [1,2] )
         output = gap
         return pool1, pool2, pool3, pool4, conv5_3, conv6, gap, output
 
@@ -195,8 +204,8 @@ class Detector():
       pool5   = tf.nn.max_pool(conv5_3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
                            padding='SAME', name='pool')
       if self.mod_param.mod_type == model_param.Model_type.VGG16P_CAM5_S :
-        conv6 = self.new_conv_layer( pool5, [5,5,512,self.n_labels], "conv6")
-        gap   = tf.reduce_mean( conv6, [1,2] )
+        conv6  = self.new_conv_layer( pool5, [5,5,512,self.n_labels], "conv6")
+        gap    = tf.reduce_mean( conv6, [1,2] )
         output = gap
         return pool1, pool2, pool3, pool4, conv5_3, conv6, gap, output
 
