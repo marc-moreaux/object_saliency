@@ -10,6 +10,7 @@ class Model_type():
   VGG16_CAM_S   = 'VGG16_CAM_S'
   VGG16_CAM5_S  = 'VGG16_CAM5_S'
   VGG16_CAM7_S  = 'VGG16_CAM7_S'
+  VGG16P_CAM3_S = 'VGG16P_CAM3_S'
   VGG16P_CAM5_S = 'VGG16P_CAM5_S'
 
 class DB_type():
@@ -119,6 +120,7 @@ class Model_params():
       Model_type.VGG16_CAM_S   : [(gv[0], gv[1]) if ('fc6' in gv[1].name) else (gv[0]*0.1, gv[1]) for gv in grads_and_vars] ,
       Model_type.VGG16_CAM5_S  : [(gv[0], gv[1]) if ('fc6' in gv[1].name) else (gv[0]*0.1, gv[1]) for gv in grads_and_vars] ,
       Model_type.VGG16_CAM7_S  : [(gv[0], gv[1]) if ('fc6' in gv[1].name) else (gv[0]*0.1, gv[1]) for gv in grads_and_vars] ,
+      Model_type.VGG16P_CAM3_S : [(gv[0], gv[1]) if ('fc6' in gv[1].name) else (gv[0]*0.1, gv[1]) for gv in grads_and_vars] ,
       Model_type.VGG16P_CAM5_S : [(gv[0], gv[1]) if ('fc6' in gv[1].name) else (gv[0]*0.1, gv[1]) for gv in grads_and_vars] ,
     }.get(self.mod_type)
   
