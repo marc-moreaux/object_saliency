@@ -12,10 +12,11 @@ from time import sleep
 import numpy as np
 import os
 
+
 ######################################
 ###  Parameter
 ######################################
-mod_param  = model_param.Model_params("PERSO", "VGG16_CAM_S", 'rmsProp', 0.00001)
+mod_param  = model_param.Model_params('PERSO', "VGG16_CAM7_S", 'rmsProp', 0.000008)
 PEPPER_IP  = "10.0.165.29"  # jmot.local
 PEPPER_IP  = "10.0.160.236" # jarc.local
 LOCAL_IP   = "10.0.164.204"
@@ -25,7 +26,7 @@ LOCAL_SERVER_FOLDER = '/home/cuda/work/cm_perso/py/image_server/'
 
 
 ######################################
-# Load video stream of pepper
+### Load video stream of pepper
 ######################################
 vStream = VideoStream( PEPPER_IP )
 img = vStream.getFrame()
@@ -34,7 +35,7 @@ img = vStream.getFrame()
 from naoqi import ALProxy
 tabletService = ALProxy("ALTabletService", PEPPER_IP, 9559)
 tts           = ALProxy("ALTextToSpeech" , PEPPER_IP, 9559)
-led           = ALProxy("ALLeds" , PEPPER_IP, 9559)
+led           = ALProxy("ALLeds"         , PEPPER_IP, 9559)
 
 
 ######################################
@@ -50,7 +51,7 @@ led           = ALProxy("ALLeds" , PEPPER_IP, 9559)
 ######################################
 # Load tensorflow's caltech model
 ######################################
-model = Forward_model(mod_param, 7)
+model = Forward_model(mod_param, 10)
 
 
 
@@ -404,9 +405,10 @@ def reshape_vis(vis, index):
     if len(vis.shape)>3:
         vis  = vis[0,:,:,index]
     print vis.max()
-    vis  = vis * (vis>2) # ReLu
-    vis  = vis * (vis<80) # ReLu top limit
-    vis /= 80 #vis.max()
+    vis  = vis * (vis>0) # ReLu
+    vis  = np.minimum(vis,10)
+    # vis  = vis * (vis<10) # ReLu top limit
+    vis /= 10 #vis.max()
     vis  = resize(vis,[224,224])
     return vis
 
@@ -419,7 +421,7 @@ img = vStream.getFrame()
 img = my_images.crop_from_center(img)
 img = resize(img, [224,224])
 named_preds, vis = model.forward_image(img,-1)
-vis = reshape_vis(vis, model.mod_param.labels.index("umbrella-101"))
+vis = reshape_vis(vis, model.mod_param.labels.index("coffee-mug"))
 
 # argmax = np.array([p[1] for p in named_preds]).argmax()
 # vis    = reshape_vis(vis, argmax)
@@ -440,9 +442,9 @@ def updatefig(*args):
     named_preds, vis = model.forward_image(img,-1)
     # argmax = np.array([p[1] for p in named_preds]).argmax()
     # vis = reshape_vis(vis, argmax)
-    # vis  = vis[0,:,:,model.mod_param.labels.index("people")]
+    # vis  = vis[0,:,:,model.mod_param.labels.index("coffee-mug")]
     # print  named_preds[argmax]
-    vis = reshape_vis(vis, model.mod_param.labels.index("umbrella-101"))
+    vis = reshape_vis(vis, model.mod_param.labels.index("coffee-mug"))
     
     # Update the axis
     im1.set_array(img)
