@@ -11,19 +11,16 @@ class Model_type():
   VGG16_CAM7_S  = 'VGG16_CAM7_S'
   VGG16P_CAM5_S = 'VGG16P_CAM5_S'
 
-
-
 class DB_type():
   PERSO      = 'PERSO'
   CALTECH256 = 'CALTECH256'
   ACTION40   = 'ACTION40'
 
-
-
 class Labels_names():
-  PERSO      = []
+  PERSO      = ['eyeglasses', 'gardening', 'people', 'playing_violin', 'applauding', 'fixing_a_car', 'fire-extinguisher', 'socks', 'cutting_vegetables', 'running', 'laptop-101', 'grand-piano-101', 'computer-mouse', 'brushing_teeth', 'computer-monitor', 'hamburger', 'head-phones', 'riding_a_bike', 't-shirt', 'waving_hands', 'washing-machine', 'playing-card', 'frying-pan', 'backpack', 'toaster', 'fixing_a_bike', 'writing_on_a_book', 'microwave', 'coffee-mug', 'washing_dishes', 'pouring_liquid', 'knife', 'hot-dog', 'texting_message', 'mushroom', 'playing_guitar', 'cleaning_the_floor', 'wine-bottle', 'using_a_computer', 'phoning', 'jumping', 'ice-cream-cone', 'grapes', 'umbrella-101', 'smoking', 'drinking', 'watching_TV', 'teapot', 'refrigerator', 'computer-keyboard', 'taking_photos', 'cereal-box', 'fried-egg', 'spoon', 'reading', 'cooking', 'chess-board', 'dog', 'walking_the_dog', 'beer-mug', 'soda-can', 'holding_an_umbrella', 'bathtub']
   CALTECH256 = []
   ACTION40   = []
+
 
 
 
@@ -80,7 +77,7 @@ class Model_params():
       return self.labels
     else :
       print "There is no %s on this computer"%self.paths["testset"]
-      self.labels = ['']*63
+      self.labels = Labels_names.PERSO
       return self.labels
   
   #####################################
