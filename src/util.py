@@ -1,6 +1,5 @@
 import skimage.io
 import skimage.transform
-import ipdb
 
 import numpy as np
 
