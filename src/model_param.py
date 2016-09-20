@@ -9,6 +9,7 @@ class Model_type():
   VGG16_CAM_W_S = 'VGG16_CAM_W_S'
   VGG16_CAM_S   = 'VGG16_CAM_S'
   VGG16_CAM7_S  = 'VGG16_CAM7_S'
+  VGG16P_CAM5_S = 'VGG16P_CAM5_S'
 
 
 
@@ -49,22 +50,24 @@ class Model_params():
         "dataset"    : '/home/cuda/datasets/'+self.dataset.lower()+'/'             ,
         "trainset"   : '/home/cuda/datasets/'+self.dataset.lower()+'/'+'train.pkl' ,
         "testset"    : '/home/cuda/datasets/'+self.dataset.lower()+'/'+'test.pkl'  ,
-        "save_model" : '../models/'+self.get_name()+'/model'                       ,
+        "save_model" : '../models/'+self.dataset+'/'+self.get_name()+'/model'      ,
         "log_file"   : "../results/"+self.get_name()+".txt"
       }
     else :
-      raise AttributeError('unknow parameter +' self.dataset)
+      raise AttributeError('dataset should be one of DB_type '+ self.dataset)
 
     # Make <paths["save_model"]> a directory if not existing
-    if not os.path.isdir(paths["save_model"]):
-      os.mkdir(paths["save_model"])
+    save_dir = "/".join(paths["save_model"].split('/')[:-1])
+    if not os.path.isdir(save_dir):
+      print "Created a new directory at : "+save_dir
+      os.mkdir(save_dir)
 
     self.paths = paths
     return self.paths
   
   def _set_labels(self):
     if self.dataset == DB_type.PERSO :
-      testset       = pickle.load( open(self.paths["testset"] , "rb") )
+      testset  = pickle.load( open(self.paths["testset"] , "rb") )
     self.labels = testset.keys()
     return self.labels
   
@@ -106,6 +109,7 @@ class Model_params():
       Model_type.VGG16_CAM_W_S : [(gv[0], gv[1]) if ('conv6' in gv[1].name or 'GAP' in gv[1].name) else (gv[0]*0.1, gv[1]) for gv in grads_and_vars] ,
       Model_type.VGG16_CAM_S   : [(gv[0], gv[1]) if ('fc6' in gv[1].name) else (gv[0]*0.1, gv[1]) for gv in grads_and_vars] ,
       Model_type.VGG16_CAM7_S  : [(gv[0], gv[1]) if ('fc6' in gv[1].name) else (gv[0]*0.1, gv[1]) for gv in grads_and_vars] ,
+      Model_type.VGG16P_CAM5_S : [(gv[0], gv[1]) if ('fc6' in gv[1].name) else (gv[0]*0.1, gv[1]) for gv in grads_and_vars] ,
     }.get(self.mod_type)
   
     train_op = optimizer.apply_gradients( grads_and_vars )
