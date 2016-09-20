@@ -189,7 +189,16 @@ class Detector():
         output = gap
         return pool1, pool2, pool3, pool4, conv5_3, conv6, gap, output
 
-      
+
+      ###################################
+      # If the model is VGG16P_CAM5_S
+      pool5   = tf.nn.max_pool(conv5_3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
+                           padding='SAME', name='pool')
+      if self.mod_param.mod_type == model_param.Model_type.VGG16P_CAM5_S :
+        conv6 = self.new_conv_layer( pool5, [5,5,512,self.n_labels], "conv6")
+        gap   = tf.reduce_mean( conv6, [1,2] )
+        output = gap
+        return pool1, pool2, pool3, pool4, conv5_3, conv6, gap, output
 
   def get_classmap(self, label, conv6):
       conv6_resized = tf.image.resize_bilinear( conv6, [224, 224] )
