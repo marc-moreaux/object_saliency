@@ -20,6 +20,13 @@ class DB_type():
 
 
 
+class Labels_names():
+  PERSO      = []
+  CALTECH256 = []
+  ACTION40   = []
+
+
+
 class Model_params():
   def __init__(self, dataset, mod_type, optimizer, learning_rate, is_l2=False, l2_weight=.0005):
     """ 
@@ -66,11 +73,15 @@ class Model_params():
     return self.paths
   
   def _set_labels(self):
-    if self.dataset == DB_type.PERSO :
-      testset  = pickle.load( open(self.paths["testset"] , "rb") )
-    self.labels = testset.keys()
-    return self.labels
-  
+    if os.path.isfile(self.paths["testset"]):
+      if self.dataset == DB_type.PERSO :
+        testset  = pickle.load( open(self.paths["testset"] , "rb") )
+      self.labels = testset.keys()
+      return self.labels
+    else :
+      print "There is no %s on this computer"%self.paths["testset"]
+      self.labels = ['']*63
+      return self.labels
   
   #####################################
   ### General purpose functions

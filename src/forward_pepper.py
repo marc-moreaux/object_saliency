@@ -16,10 +16,10 @@ import os
 ######################################
 ###  Parameter
 ######################################
-mod_param  = model_param.Model_params('PERSO', "VGG16_CAM7_S", 'rmsProp', 0.000008)
+mod_param  = model_param.Model_params('PERSO', "VGG16_CAM_W_S", 'rmsProp', 0.00001)
 PEPPER_IP  = "10.0.165.29"  # jmot.local
 PEPPER_IP  = "10.0.160.236" # jarc.local
-LOCAL_IP   = "10.0.164.204"
+LOCAL_IP   = "10.0.164.160"
 LOCAL_PORT = 8081
 LOCAL_SERVER = "http://"+LOCAL_IP+":8081/"
 LOCAL_SERVER_FOLDER = '/home/cuda/work/cm_perso/py/image_server/'
@@ -51,7 +51,7 @@ led           = ALProxy("ALLeds"         , PEPPER_IP, 9559)
 ######################################
 # Load tensorflow's caltech model
 ######################################
-model = Forward_model(mod_param, 10)
+model = Forward_model(mod_param, 24)
 
 
 
