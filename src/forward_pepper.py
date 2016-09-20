@@ -402,13 +402,13 @@ colors = RGB_tuples
 
 
 def reshape_vis(vis, index):
+    max_val = 10
     if len(vis.shape)>3:
         vis  = vis[0,:,:,index]
     print vis.max()
     vis  = vis * (vis>0) # ReLu
-    vis  = np.minimum(vis,10)
-    # vis  = vis * (vis<10) # ReLu top limit
-    vis /= 10 #vis.max()
+    vis  = np.minimum(vis,max_val)
+    vis /= mav_val
     vis  = resize(vis,[224,224])
     return vis
 
