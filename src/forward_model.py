@@ -75,7 +75,7 @@ class Forward_model:
       named_preds = [(self.labels[i], preds[0][i]) for i in preds_order[0]]
       return named_preds, np.array(classmap_vis)[0]
 
-    if self.mod_param.mod_type in ("VGG16_CAM_S", 'VGG16_CAM7_S', "VGG16P_CAM5_S" ):
+    if self.mod_param.mod_type in ("VGG16_CAM_S", 'VGG16_CAM5_S', 'VGG16_CAM7_S', 'VGG16P_CAM3_S', "VGG16P_CAM5_S" ):
       named_preds = [(self.labels[idx], p) for idx,p in enumerate(preds[0])]
       return named_preds, conv6_val
 
