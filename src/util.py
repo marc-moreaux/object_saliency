@@ -25,3 +25,38 @@ def load_image( path ):
     resized_img = skimage.transform.resize( crop_img, [224,224] )
     return resized_img
 
+
+
+
+
+##########################################
+###  Plotting funtions
+##########################################
+
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import my_images
+
+def plot_histogram(vStream, model, idx ):
+
+    # idx = model.mod_param.labels.index("soda-can")
+    def update_hist(*args):
+        plt.cla()
+        img = vStream.getFrame()
+        img = my_images.crop_from_center(img)
+        img = resize(img, [224,224])
+        named_preds, vis = model.forward_image(img, idx)
+        plt.hist(vis.reshape(-1), bins=50, range=(-600,50))
+        plt.plot([1400])
+    
+    fig = plt.figure()
+    
+    hist = plt.hist([0,0,0,0,0], bins=50, range=(-600,50))
+    plt.plot([1400])
+    
+    import matplotlib.animation as animation 
+    animation = animation.FuncAnimation(fig, update_hist, interval=10)
+    plt.show()
+
+
+# plot_histogram(vStream, model, 2)
