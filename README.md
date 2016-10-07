@@ -19,6 +19,6 @@ and :
 '''
 echo "
 
-PYTHONPATH=~/work/cm_perso/py/utils"
-export $PYTHONPATH
+PYTHONPATH=$PYTHONPATH:~/work/cm_perso/py/utils"
+export $PYTHONPATH" >> ~/.bashrc
 '''
