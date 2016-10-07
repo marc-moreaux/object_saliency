@@ -18,5 +18,5 @@ https://github.com/marc-moreaux/cm_perso <br/>
 and :<br/>
 echo "<br/>
 <br/>
-PYTHONPATH=$PYTHONPATH:~/work/cm_perso/py/utils<br/>
-export $PYTHONPATH" >> ~/.bashrc<br/>
+PYTHONPATH=\$PYTHONPATH:~/work/cm_perso/py/utils<br/>
+export \$PYTHONPATH" >> ~/.bashrc<br/>
