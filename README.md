@@ -19,4 +19,4 @@ and :<br/>
 echo "<br/>
 <br/>
 PYTHONPATH=\$PYTHONPATH:~/work/cm_perso/py/utils<br/>
-export \$PYTHONPATH" >> ~/.bashrc<br/>
+export PYTHONPATH" >> ~/.bashrc<br/>
