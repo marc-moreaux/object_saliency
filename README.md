@@ -16,9 +16,7 @@ Otherwise, download some files at https://drive.google.com/drive/folders/0B8tQbR
 Also download the git repository :
 https://github.com/marc-moreaux/cm_perso <br/>
 and :<br/>
-'''
 echo "<br/>
 <br/>
-PYTHONPATH=$PYTHONPATH:~/work/cm_perso/py/utils"<br/>
+PYTHONPATH=$PYTHONPATH:~/work/cm_perso/py/utils<br/>
 export $PYTHONPATH" >> ~/.bashrc<br/>
-'''
