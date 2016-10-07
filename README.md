@@ -13,3 +13,12 @@ Otherwise, download some files at https://drive.google.com/drive/folders/0B8tQbR
 2. ./models/PERSO/PERSO.VGG16_CAM_W_S.rmsProp.1e-5/model-24
 3. ./models/PERSO/PERSO.VGG16_CAM_W_S.rmsProp.1e-5/model-24.meta
 
+Also download the git repository :
+https://github.com/marc-moreaux/cm_perso
+and :
+'''
+echo "
+
+PYTHONPATH=~/work/cm_perso/py/utils"
+export $PYTHONPATH
+'''
