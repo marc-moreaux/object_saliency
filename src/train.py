@@ -23,24 +23,23 @@ batch_size = 50
 ### Begin with Tensorflow :D
 ###################################
 
-
 def print_train(epoch, iterations, accuracy, train_loss, batch_size, n_iter, log_file):
   # log_file.write('epoch:'+str(epoch)+' iter:'+str(iterations)+' loss:'+str(train_loss) + '\n')
   log_file.write('epoch:%2d - iter:%3d - loss:%2.7f\n'%(epoch, iterations, train_loss))
-  print("======================================")
-  print("Epoch", epoch, "Iteration", iterations)
-  print("Processed", iterations*batch_size, '/', n_iter)
-  print("Accuracy:", accuracy, '/', batch_size)
-  print("Training Loss:", train_loss)
-  print("\n")
+  print "======================================"
+  print "Epoch", epoch, "Iteration", iterations
+  print "Processed", iterations*batch_size, '/', n_iter
+  print "Accuracy:", accuracy, '/', batch_size
+  print "Training Loss:", train_loss
+  print " "
 
 def print_test(epoch, test_accuracy, log_file):
   # log_file.write('epoch:'+str(epoch)+' acc:'+str(test_accuracy) + '\n')
   log_file.write('epoch:%2d - acc:%.3f\n'%(epoch, test_accuracy))
   log_file.write('---------------\n')
-  print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-  print('epoch:'+str(epoch)+'\tacc:'+str(test_accuracy) + '\n')
-  print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+  print "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
+  print 'epoch:'+str(epoch)+'\tacc:'+str(test_accuracy)
+  print "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
 
 def my_train(mod_param, n_epochs=15):
   with open(mod_param.paths["log_file"], 'w',0) as log_file:
@@ -123,6 +122,8 @@ def my_train(mod_param, n_epochs=15):
 
 
 
+mod_param  = model_param.Model_params("EXT_MNIST", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 5e-5)
+my_train(mod_param, 15)
 
 
 
