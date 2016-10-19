@@ -1,5 +1,4 @@
-
-from util import load_image
+# train from util import load_image
 import tensorflow as tf
 import cPickle as pickle
 import numpy as np
@@ -19,50 +18,10 @@ momentum = 0.9
 batch_size = 50
 
 
-def get_batch(mdict, batch_size=10):
-  """load the dict images as batch and perform some 
-  reshaping operations on them. Also, the images are
-  returned such that there is an equal number of 
-  images per classes
-  
-  return:
-  images -- array of <batch_size> images
-  labels -- array of <batch_size> labels
-  """
-  # Some variables
-  max_len   = max(map(len, mdict.values()))
-   
-  # We'll return n_keys*max(n_values) indices (fake array) 
-  idxs = list(np.random.permutation(len(mdict.keys())*max_len))
-  idxs = [ [idxs.pop() for _ in range(batch_size)] \
-                      for _ in range(len(idxs)/batch_size)  ]
-  
-  # Yield batch of images
-  for batch_idxs in idxs:
-    img_list   = []
-    label_list = []
-    for idx in batch_idxs:
-      key  = idx/max_len
-      label_list.append(key)
-      key  = mdict.keys()[key]
-      val  = idx%max_len # val in fake array
-      path = mdict[key][val%len(mdict[key])]
-      tmp  = my_images.load_augmented_image(path)
-      img_list.append(tmp)
-   
-    yield np.stack(img_list), np.stack(label_list)
-
 
 ###################################
 ### Begin with Tensorflow :D
 ###################################
-
-
-
-# if pretrained_model_path:
-#     print("Pretrained")
-#     saver.restore(sess, pretrained_model_path)
-
 
 
 def print_train(epoch, iterations, accuracy, train_loss, batch_size, n_iter, log_file):
@@ -85,25 +44,36 @@ def print_test(epoch, test_accuracy, log_file):
 
 def my_train(mod_param, n_epochs=15):
   with open(mod_param.paths["log_file"], 'w',0) as log_file:
+    # Tensorflow vars
+    log_file =open(mod_param.paths["log_file"], 'w',0) 
+    tf.reset_default_graph()
+    tf_learning_rate = tf.placeholder( tf.float32, [])
+    images_tf = tf.placeholder( tf.float32, [None, 224, 224, 3], name="images")
+    labels_tf = tf.placeholder( tf.int64, [None], name='labels')
+    detector  = Detector(mod_param)
+    p1,p2,p3,p4,conv5, conv6, gap, output = detector.inference(images_tf)
+    
+    # Init Tensorflow
+    sess     = tf.InteractiveSession()
+    saver    = tf.train.Saver( max_to_keep=50 )
     # train vars
     model_path = mod_param.paths["save_model"]
     n_labels   = mod_param.n_labels
     pretrained_model_path = model_path+'-3'
-    trainset, testset     = mod_param.get_datasets()
     loss_tf               = mod_param.get_loss(output, labels_tf)
     optimizer, train_op   = mod_param.get_optimizer(tf_learning_rate, loss_tf)
-    
     # loop varaibles
     tf.initialize_all_variables().run()
     loss_list = []
     iterations = 0
-    n_iter = len(trainset.keys())*max(map(len, trainset.values()))
+    n_iter = 600*20
+    log_file = open(mod_param.paths["log_file"], 'w',0)
     for epoch in range(n_epochs):
       ##################################
       ### Training 
       ##################################
       iterations = 0
-      for batch_images, batch_labels in get_batch(trainset,batch_size):
+      for batch_images, batch_labels in mod_param.get_batch('train',batch_size):
         _, loss_val, output_val = sess.run(
               [train_op, loss_tf, output],
               feed_dict={
@@ -126,7 +96,7 @@ def my_train(mod_param, n_epochs=15):
       ##################################
       n_correct = 0
       n_data = 0
-      for batch_images, batch_labels in get_batch(testset,batch_size):
+      for batch_images, batch_labels in mod_param.get_batch('test',batch_size):
         output_vals = sess.run(
                 output,
                 feed_dict={images_tf:batch_images})
@@ -143,53 +113,38 @@ def my_train(mod_param, n_epochs=15):
       ### Save weights and go to 
       ###   next batch
       saver.save( sess, mod_param.paths["save_model"], global_step=epoch)
-      mod_param.lr *= 0.99
-  
+      mod_param.lr *= 0.9
 
 
 
 
-# ###################################
-# ### Setup 1st model to train
-
-# model vars
-mod_param  = model_param.Model_params("PERSO", "VGG16_CAM_S", 'rmsProp', 0.000005, True)
-
-# Tensorflow vars
-tf_learning_rate = tf.placeholder( tf.float32, [])
-images_tf = tf.placeholder( tf.float32, [None, 224, 224, 3], name="images")
-labels_tf = tf.placeholder( tf.int64, [None], name='labels')
-detector  = Detector(mod_param)
-p1,p2,p3,p4,conv5, conv6, gap, output = detector.inference(images_tf)
-
-# loss function
-sess     = tf.InteractiveSession()
-saver    = tf.train.Saver( max_to_keep=50 )
-
-my_train(mod_param, 40)
 
 
 
 
-# ###################################
-# ### Setup 2nd model to train
-tf.reset_default_graph()
 
-# model vars
-mod_param  = model_param.Model_params("PERSO", "VGG16_CAM_S", 'rmsProp', 0.00001, True)
 
-# Tensorflow vars
-tf_learning_rate = tf.placeholder( tf.float32, [])
-images_tf = tf.placeholder( tf.float32, [None, 224, 224, 3], name="images")
-labels_tf = tf.placeholder( tf.int64, [None], name='labels')
-detector  = Detector(mod_param)
-p1,p2,p3,p4,conv5, conv6, gap, output = detector.inference(images_tf)
 
-# loss function
-sess     = tf.InteractiveSession()
-saver    = tf.train.Saver( max_to_keep=50 )
 
-my_train(mod_param, 40)
+
+
+
+
+mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b7a_S", 'rmsProp', 8e-6, 5e-5, 5e-5)
+my_train(mod_param, 15)
+
+mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 5e-5)
+my_train(mod_param, 15)
+
+mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5_S", 'rmsProp',   1e-5, 5e-5, 5e-5)
+my_train(mod_param, 15)
+
+mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   8e-6, 5e-5, 5e-5)
+my_train(mod_param, 15)
+
+mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM3a5a7a_S", 'rmsProp',   8e-6, 5e-5, 5e-5)
+my_train(mod_param, 15)
+
 
 
 
@@ -236,6 +191,7 @@ my_train(mod_param, 40)
 # t_end = time.time()
 # print "%.3f sec to load %d images"%(t_end-t_start, count)
 # print "=> %.3fsec to load 70 imgs"%(t_end-t_start/count*70)
+
 
 
 
