@@ -129,8 +129,8 @@ class Detector():
     output  = fc8
     return self.pool1, self.pool2, self.pool3, self.pool4, self.conv5_3, None, None, self.output
 
-  def _VGG16_CAM_W_S(self):
-    conv6 = self.new_conv_layer( self.conv5_3, [3,3,512,1024], "conv6")
+  def _VGG16_CAM_W_S(self, cam_size):
+    conv6 = self.new_conv_layer( self.conv5_3, [cam_size,cam_size,512,1024], "conv6")
     gap   = tf.reduce_mean( conv6, [1,2] )
     with tf.variable_scope("GAP"):
         gap_w = tf.get_variable(
@@ -143,7 +143,7 @@ class Detector():
   def _VGG16_CAMX_S(self, cam_filter_size, end_pooling=False):
     if end_pooling == True:
       pool5   = tf.nn.max_pool(self.conv5_3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
-                               padding='SAME', name='pool')
+                               padding='SAME', name='pool5')
       conv6  = self.new_conv_layer( pool5, [cam_filter_size,cam_filter_size,512,self.n_labels], "conv6")
     else :
       conv6  = self.new_conv_layer( self.conv5_3, [cam_filter_size,cam_filter_size,512,self.n_labels], "conv6")
@@ -151,6 +151,29 @@ class Detector():
     output = gap
     return self.pool1, self.pool2, self.pool3, self.pool4, self.conv5_3, conv6, gap, output
 
+  def _VGG16_CAMXX_S(self, cam_filter_size, end_pooling=False):
+    in_to_conv6 = self.conv5_3
+    if end_pooling == True:
+      pool5   = tf.nn.max_pool(self.conv5_3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
+                               padding='SAME', name='pool5')
+      in_to_conv6 = pool5
+
+    conv6 = []
+    ccn_s = []
+    for m_filter in cam_filter_size:
+      cam_size = m_filter[0]
+      n_cam    = m_filter[1]
+      conv6_tmp = self.new_conv_layer( in_to_conv6, 
+                                        [cam_size,cam_size,512,self.n_labels*n_cam], 
+                                        "conv6_"+str(cam_size))
+      conv6.append( conv6_tmp )
+      gap = tf.reduce_mean( conv6_tmp, [1,2], name="gap"+str(cam_size))
+      ccn = tf.reshape(gap,[-1,self.n_labels,n_cam])
+      ccn = tf.reduce_mean(ccn, 2)
+      ccn_s.append(ccn)
+    
+    output = sum(ccn_s)
+    return self.pool1, self.pool2, self.pool3, self.pool4, self.conv5_3, conv6, gap, output
 
   def inference( self, rgb, train=False ):
       rgb *= 255.
@@ -189,23 +212,46 @@ class Detector():
       conv5_3 = self.conv_layer( conv5_2, "conv5_3")
 
       # Store all in <self>
-      conv1_1=self.conv1_1 ; conv1_2=self.conv1_2 ; pool1  =self.pool1
-      conv2_1=self.conv2_1 ; conv2_2=self.conv2_2 ; pool2  =self.pool2
-      conv3_1=self.conv3_1 ; conv3_2=self.conv3_2 ; conv3_3=self.conv3_3 ; pool3=self.pool3
-      conv4_1=self.conv4_1 ; conv4_2=self.conv4_2 ; conv4_3=self.conv4_3 ; pool4=self.pool4
-      conv5_1=self.conv5_1 ; conv5_2=self.conv5_2 ; conv5_3=self.conv5_3
+      self.conv1_1=conv1_1 ; self.conv1_2=conv1_2 ; self.pool1  =pool1
+      self.conv2_1=conv2_1 ; self.conv2_2=conv2_2 ; self.pool2  =pool2
+      self.conv3_1=conv3_1 ; self.conv3_2=conv3_2 ; self.conv3_3=conv3_3 ; self.pool3=pool3
+      self.conv4_1=conv4_1 ; self.conv4_2=conv4_2 ; self.conv4_3=conv4_3 ; self.pool4=pool4
+      self.conv5_1=conv5_1 ; self.conv5_2=conv5_2 ; self.conv5_3=conv5_3
 
 
-      switcher = {
-        model_param.Model_type.VGG16         = self._VGG16()
-        model_param.Model_type.VGG16_CAM_W_S = self._VGG16_CAM_W_S()
-        model_param.Model_type.VGG16_CAM_S   = self._VGG16_CAMX_S(3)
-        model_param.Model_type.VGG16_CAM5_S  = self._VGG16_CAMX_S(5)
-        model_param.Model_type.VGG16_CAM7_S  = self._VGG16_CAMX_S(7)
-        model_param.Model_type.VGG16P_CAM3_S = self._VGG16P_CAMX_S(3, True)
-        model_param.Model_type.VGG16P_CAM5_S = self._VGG16P_CAMX_S(5, True)
-      }.get(self.mod_param.mod_type)
+      m_type = self.mod_param.mod_type
+      if m_type == model_param.Model_type.VGG16         :
+        return self._VGG16()
+      if m_type == model_param.Model_type.VGG16_CAM3_W_S :
+        return self._VGG16_CAM_W_S(3)
+      if m_type == model_param.Model_type.VGG16_CAM3_S   :
+        return self._VGG16_CAMX_S(3)
+      if m_type == model_param.Model_type.VGG16_CAM5_S  :
+        return self._VGG16_CAMX_S(5)
+      if m_type == model_param.Model_type.VGG16_CAM7_S  :
+        return self._VGG16_CAMX_S(7)
+      if m_type == model_param.Model_type.VGG16P_CAM3_S :
+        return self._VGG16_CAMX_S(3, True)
+      if m_type == model_param.Model_type.VGG16P_CAM5_S :
+        return self._VGG16_CAMX_S(5, True)
+      if m_type == model_param.Model_type.VGG16P_CAM7_S :
+        return self._VGG16_CAMX_S(7, True)
 
+      if m_type == model_param.Model_type.VGG16_CAM3e_S  :
+        return self._VGG16_CAMXX_S( [(3,5)] )
+      if m_type == model_param.Model_type.VGG16_CAM5b_S  :
+        return self._VGG16_CAMXX_S( [(5,2)] )
+      if m_type == model_param.Model_type.VGG16_CAM5e_S  :
+        return self._VGG16_CAMXX_S( [(5,5)] )
+      if m_type == model_param.Model_type.VGG16_CAM7e_S  :
+        return self._VGG16_CAMXX_S( [(7,5)] )
+      if m_type == model_param.Model_type.VGG16_CAM5a7a_S :
+        return self._VGG16_CAMXX_S( [(5,1),(7,1)] )
+      if m_type == model_param.Model_type.VGG16_CAM5b7a_S :
+        return self._VGG16_CAMXX_S( [(5,2),(7,1)] )
+      if m_type == model_param.Model_type.VGG16_CAM3a5a7a_S :
+        return self._VGG16_CAMXX_S( [(3,1),(5,1),(7,1)] )
+        
 
   def get_classmap(self, label, conv6):
       conv6_resized = tf.image.resize_bilinear( conv6, [224, 224] )
