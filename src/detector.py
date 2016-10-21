@@ -132,7 +132,7 @@ class Detector():
   def _VGG16_CAM_W_S(self, cam_size):
     conv6 = self.new_conv_layer( self.conv5_3, [cam_size,cam_size,512,1024], "conv6")
     gap   = tf.reduce_mean( conv6, [1,2] )
-    with tf.variable_scope("GAP"):
+    with tf.variable_scope("gap"):
         gap_w = tf.get_variable(
                 "W",
                 shape=[1024, self.n_labels],
@@ -147,7 +147,7 @@ class Detector():
       conv6  = self.new_conv_layer( pool5, [cam_filter_size,cam_filter_size,512,self.n_labels], "conv6")
     else :
       conv6  = self.new_conv_layer( self.conv5_3, [cam_filter_size,cam_filter_size,512,self.n_labels], "conv6")
-    gap    = tf.reduce_mean( conv6, [1,2] )
+    gap    = tf.reduce_mean( conv6, [1,2], name="gap"+str(cam_filter_size) )
     output = gap
     return self.pool1, self.pool2, self.pool3, self.pool4, self.conv5_3, conv6, gap, output
 
@@ -173,7 +173,7 @@ class Detector():
       ccn_s.append(ccn)
     
     output = sum(ccn_s)
-    return self.pool1, self.pool2, self.pool3, self.pool4, self.conv5_3, conv6, gap, output
+    return self.pool1, self.pool2, self.pool3, self.pool4, self.conv5_3, conv6, ccn_s, output
 
   def inference( self, rgb, train=False ):
       rgb *= 255.
@@ -251,7 +251,6 @@ class Detector():
         return self._VGG16_CAMXX_S( [(5,2),(7,1)] )
       if m_type == model_param.Model_type.VGG16_CAM3a5a7a_S :
         return self._VGG16_CAMXX_S( [(3,1),(5,1),(7,1)] )
-        
 
   def get_classmap(self, label, conv6):
       conv6_resized = tf.image.resize_bilinear( conv6, [224, 224] )

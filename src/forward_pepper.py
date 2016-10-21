@@ -16,15 +16,15 @@ import os
 ######################################
 ###  Parameter
 ######################################
-mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 5e-5)
-model      = Forward_model(mod_param, 5)
+mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-7)
+model  = Forward_model(mod_param, 14)
+labels = model.mod_param.labels
 PEPPER_IP  = "10.0.165.29"  # jmot.local
-PEPPER_IP  = "10.0.160.236" # jarc.local
+PEPPER_IP  = "10.0.161.43" # jarc.local
 LOCAL_IP   = "10.0.164.160"
 LOCAL_PORT = 8081
 LOCAL_SERVER = "http://"+LOCAL_IP+":8081/"
 LOCAL_SERVER_FOLDER = '/home/cuda/work/cm_perso/py/image_server/'
-
 
 ######################################
 ### Load video stream of pepper
@@ -96,9 +96,6 @@ HSV_tuples = [(x*1.0/N, .8 if x%2 else 1, .8 if x%2 else 1) for x in range(N)]
 RGB_tuples = map(lambda x: colorsys.hsv_to_rgb(*x), HSV_tuples)
 colors = RGB_tuples
 
-
-
-
 def print_sorted_preds(named_preds):
   for name, p in sorted(named_preds, key=lambda a:a[1])[-5:]:
     print "%-15s %3.3f"%(name,p)
@@ -116,45 +113,130 @@ def reshape_vis(vis, index):
   vis  = resize(vis,[224,224])
   return vis
 
+def summed_vis(model, vis):
+  # Retrieve model's CAM's properties 
+  # eg: 'CALTECH256.VGG16_CAM5b_S.rmsProp.1e-5' => '5b'
+  name = model.mod_param.get_name()
+  suffix = [ s for s in name.split("_") if "CAM" in s][0][3:]
+  if len(suffix) < 1:
+    suffix = '3'
+  if len(suffix) < 2:
+    suffix += 'a'
+    vis = [vis]
+  
+  filter_sizes = []
+  for idx in range(0, 2, len(suffix)):
+    alphabet_index = ord(suffix[idx+1]) - ord('a') + 1
+    filter_sizes.append((int(suffix[idx]), alphabet_index))
+  
+  # Concatenate all the CAMs to <end_viz>
+  end_viz = None
+  for idx,filter_size in enumerate(filter_sizes):
+    cam_size  = filter_size[0]
+    n_cam     = filter_size[1]
+    new_shape = list(vis[idx].shape[:-1])+[model.n_labels]+[n_cam]
+    m_vis     = vis[idx].reshape(new_shape)
+    m_vis     = m_vis.sum(axis=len(new_shape)-1)
+    end_viz   = m_vis if end_viz == None else sum(end_viz, m_vis)
+  
+  return end_viz
+
+def get_img_pred_and_vis():
+  img = vStream.getFrame()
+  img = my_images.crop_from_center(img)
+  img = resize(img, [224,224])
+  named_preds, vis = model.forward_image(img, True)
+  return img, named_preds, vis
 
 
 
 
-# ######################################
-# ### Plotting time !!
-# ######################################
-img = vStream.getFrame()
-img = my_images.crop_from_center(img)
-img = resize(img, [224,224])
-named_preds, vis = model.forward_image(img,-1)
-vis = reshape_vis(vis, model.mod_param.labels.index("soda-can"))
+
+def print_vis_stat(vis, idx=None):
+  """Expected shape is (14,14,x)"""
+  idx = range(vis.shape[-1]) if idx == None else idx
+  for idx in range(vis.shape[-1]):
+    _v = vis[:,:,:,idx]
+    print "[%7.2f ; %7.2f ; %7.2f]"%(_v.min(), _v.mean(), _v.max()),
+    if idx %3 == 0:
+      print "%10s " % model.labels[idx][:10]
+    else : 
+      print "%10s " % model.labels[idx][:10],
+
+
+
+# import sys; sys.path.append("/home/cuda/datasets/mnist/")
+# import mnist_getter
+
+# batch = mnist_getter.get_batch_224(batch_size=10).next()
+
+# for img_idx in range(1):
+#   img   = batch[0][img_idx]
+#   lbl   = batch[1][img_idx]
+#   named_preds, vis = model.forward_image(img, True)
+  
+#   summed_viz = summed_vis(model, vis)
+#   print_vis_stat(summed_viz)
+  
+#   print lbl
+#   fig, axs = plt.subplots(3,10)
+#   for idx, ax in enumerate([b for a in axs for b in a]):
+#     if idx < 10*2:
+#       tmp_idx = (idx*2)%20+idx/10
+#       ax.imshow(vis[0][0,:,:,tmp_idx], vmin=-15, vmax=15)
+#     elif idx < 10*3:
+#       ax.imshow(summed_viz[0,:,:,idx-20], vmin=-15, vmax=15)
+  
+#   plt.show()
+
+
+
+
+
+
+
+######################################
+### Plotting time !!
+######################################
+img, named_preds, vis = get_img_pred_and_vis()
+summed_viz = summed_vis(model, vis)
+
+lbl_idx = []
+lbl_idx.append( labels.index("head-phones") )
+lbl_idx.append( labels.index("people") )
+lbl_idx.append( labels.index("soda-can") )
+lbl_idx.append( labels.index("cereal-box") )
+lbl_idx.append( labels.index("coffee-mug") )
+lbl_idx.append( labels.index("eyeglasses") )
 
 # First plot
-fig, ax = plt.subplots(1,1)
-im1 = ax.imshow(img, animated=True)
-im2 = ax.imshow(vis, cmap=plt.cm.jet, alpha=.5, interpolation='nearest', vmin=0, vmax=1)
+fig, axs = plt.subplots(1, len(lbl_idx)+1 )
+ims = []
+ims.append( axs[0].imshow(img, animated=True)  )
+for i in range(len(lbl_idx)):
+  ims.append( axs[i+1].imshow(summed_viz[0,:,:,0], vmin=0, vmax=20) )
+  axs[i+1].set_title(labels[lbl_idx[i]])
 
 
 # update function
 def updatefig(*args):
-    img = vStream.getFrame()
-    img = my_images.crop_from_center(img)
-    img = resize(img, [224,224])
-    named_preds, vis = model.forward_image(img,-1)
-    tmp = vis[0,:,:,model.mod_param.labels.index("soda-can")]
-    print "min %2.3f, max %2.3f, mean %2.3f"%(tmp.min(),tmp.max(),tmp.mean())
-    vis = reshape_vis(vis, model.mod_param.labels.index("soda-can"))
+    img, named_preds, vis = get_img_pred_and_vis()
+    summed_viz = summed_vis(model, vis)
     
     # Update the axis
-    im1.set_array(img)
-    im2.set_array(vis)
+    ims[0].set_array( img )
+    for i in range(len(lbl_idx)):
+      ims[i+1].set_array( summed_viz[0,:,:,lbl_idx[i]] )
     
+    print_vis_stat(summed_viz, lbl_idx)
     print_sorted_preds(named_preds)
     
-    return im1, im2
+    return ims
 
 ani1 = animation.FuncAnimation(fig, updatefig, interval=10, blit=False)
 fig.show()
+
+
 
 
 

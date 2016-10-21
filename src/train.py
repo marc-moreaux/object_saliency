@@ -59,7 +59,7 @@ def my_train(mod_param, n_epochs=15):
     model_path = mod_param.paths["save_model"]
     n_labels   = mod_param.n_labels
     pretrained_model_path = model_path+'-3'
-    loss_tf               = mod_param.get_loss(output, labels_tf)
+    loss_tf               = mod_param.get_loss(output, labels_tf, conv6)
     optimizer, train_op   = mod_param.get_optimizer(tf_learning_rate, loss_tf)
     # loop varaibles
     tf.initialize_all_variables().run()
@@ -119,33 +119,17 @@ def my_train(mod_param, n_epochs=15):
 
 
 
-
-
-
-mod_param  = model_param.Model_params("EXT_MNIST", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 5e-5)
+mod_param  = model_param.Model_params("EXT_MNIST", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-6)
 my_train(mod_param, 15)
 
-
-
-
-
-
-
-mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b7a_S", 'rmsProp', 8e-6, 5e-5, 5e-5)
+mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',  8e-6, 5e-5, 1e-6)
 my_train(mod_param, 15)
 
-mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 5e-5)
+mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5_S" , 'rmsProp',   1e-5, 5e-5, 1e-6)
 my_train(mod_param, 15)
 
-mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5_S", 'rmsProp',   1e-5, 5e-5, 5e-5)
+mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-7)
 my_train(mod_param, 15)
-
-mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   8e-6, 5e-5, 5e-5)
-my_train(mod_param, 15)
-
-mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM3a5a7a_S", 'rmsProp',   8e-6, 5e-5, 5e-5)
-my_train(mod_param, 15)
-
 
 
 

@@ -85,7 +85,7 @@ class Forward_model:
     named_preds = [(self.labels[idx], p) for idx,p in enumerate(preds)]
     return named_preds
   
-  def forward_image(self, img):
+  def forward_image(self, img, visualize=False):
     """Retrieve prediction's text and visualisation
     
       Keyword arguments:
@@ -94,7 +94,8 @@ class Forward_model:
     """
     # Reshape image
     img = img.reshape(1,224,224,3)
-    return self.forward_images(img)[0]
+    tup = self.forward_images(img, visualize)
+    return tup[0][0], tup[1]
   
   def forward_images(self, imgs, visualize=False):
     """Retrieve prediction's text and visualisation
@@ -118,10 +119,10 @@ class Forward_model:
       named_preds = map(self.to_named_pred, preds)
       return named_preds
     
-    if self.mod_param.mod_type == "VGG16_CAM_W_S":
+    if "CAM3_W_S" in self.mod_param.mod_type :
       return self._visualize_cam_w_s(imgs)
   
-    if self.mod_param.mod_type in ("VGG16_CAM_S", 'VGG16_CAM5_S', 'VGG16_CAM7_S', 'VGG16P_CAM3_S', "VGG16P_CAM5_S" ):
+    else :
       return self._visualize_cam_s(imgs)
   
 
