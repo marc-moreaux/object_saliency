@@ -8,7 +8,7 @@ import cv2
 @Singleton
 class DetectObject:
   def __init__(self):
-    self.mod_param  = model_param.Model_params('PERSO', "VGG16_CAM_W_S", 'rmsProp', 0.00001)
+    mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-7)
     self.model = None
     self.loadDetector()
   
@@ -25,7 +25,7 @@ class DetectObject:
     Load model on GPU
     """
     if self.model == None:
-      self.model = Forward_model(self.mod_param, 24)
+      self.model = Forward_model(self.mod_param, 38)
   
   
   def detectInBuffer( self, npBuffer ):
