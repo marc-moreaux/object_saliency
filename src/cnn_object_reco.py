@@ -8,7 +8,7 @@ import cv2
 @Singleton
 class DetectObject:
   def __init__(self):
-    mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-7)
+    self.mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-7)
     self.model = None
     self.loadDetector()
   
