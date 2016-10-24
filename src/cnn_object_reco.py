@@ -28,7 +28,7 @@ class DetectObject:
       self.model = Forward_model(self.mod_param, 38)
   
   
-  def detectInBuffer( self, npBuffer ):
+  def detectInBuffer( self, npBuffer , resize=True):
     """
     return une liste d'objet avec confiance
     """
