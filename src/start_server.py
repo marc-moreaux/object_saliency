@@ -12,7 +12,7 @@ import cnn_object_reco
 def runServer():
     
     def analyseImage( npImage ):
-      return cnn_object_reco.DetectObject.Instance().detectInBuffer( npImage )
+      return cnn_object_reco.DetectObject.Instance().detectInBuffer( npImage )[0]
     
     s = abcdk.socket_receive.SocketReceiver()
     nPortNumber = 10000
