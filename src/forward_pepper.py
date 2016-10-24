@@ -16,7 +16,7 @@ import os
 ######################################
 ###  Parameter
 ######################################
-mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-7)
+mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-5)
 model  = Forward_model(mod_param, 14)
 labels = model.mod_param.labels
 PEPPER_IP  = "10.0.165.29"  # jmot.local
@@ -141,14 +141,16 @@ def summed_vis(model, vis):
   
   return end_viz
 
-def get_img_pred_and_vis():
+def get_img_pred_and_vis(do_resize=True):
   img = vStream.getFrame()
-  img = my_images.crop_from_center(img)
-  img = resize(img, [224,224])
+  if resize == True :
+    img = my_images.crop_from_center(img)
+    resize_shape = [224,224]
+  else:
+    resize_shape = img.shape[:2]
+  img = resize(img, resize_shape)
   named_preds, vis = model.forward_image(img, True)
   return img, named_preds, vis
-
-
 
 
 
@@ -157,7 +159,7 @@ def print_vis_stat(vis, idx=None):
   idx = range(vis.shape[-1]) if idx == None else idx
   for idx in range(vis.shape[-1]):
     _v = vis[:,:,:,idx]
-    print "[%7.2f ; %7.2f ; %7.2f]"%(_v.min(), _v.mean(), _v.max()),
+    print "[%9.2f ; %9.2f ; %9.2f]"%(_v.min(), _v.mean(), _v.max()),
     if idx %3 == 0:
       print "%10s " % model.labels[idx][:10]
     else : 
@@ -193,8 +195,6 @@ def print_vis_stat(vis, idx=None):
 
 
 
-
-
 ######################################
 ### Plotting time !!
 ######################################
@@ -208,13 +208,16 @@ lbl_idx.append( labels.index("soda-can") )
 lbl_idx.append( labels.index("cereal-box") )
 lbl_idx.append( labels.index("coffee-mug") )
 lbl_idx.append( labels.index("eyeglasses") )
+lbl_idx.append( labels.index("computer-keyboard") )
+
 
 # First plot
-fig, axs = plt.subplots(1, len(lbl_idx)+1 )
+fig, axs = plt.subplots(2, (len(lbl_idx)+1)/2 )
+axs = [a for b in axs for a in b]
 ims = []
 ims.append( axs[0].imshow(img, animated=True)  )
 for i in range(len(lbl_idx)):
-  ims.append( axs[i+1].imshow(summed_viz[0,:,:,0], vmin=0, vmax=20) )
+  ims.append( axs[i+1].imshow(summed_viz[0,:,:,0], vmin=0, vmax=20000) )
   axs[i+1].set_title(labels[lbl_idx[i]])
 
 
@@ -226,7 +229,7 @@ def updatefig(*args):
     # Update the axis
     ims[0].set_array( img )
     for i in range(len(lbl_idx)):
-      ims[i+1].set_array( summed_viz[0,:,:,lbl_idx[i]] )
+      ims[i+1].set_array( np.exp(summed_viz[0,:,:,lbl_idx[i]]) )
     
     print_vis_stat(summed_viz, lbl_idx)
     print_sorted_preds(named_preds)
@@ -238,6 +241,76 @@ fig.show()
 
 
 
+
+
+plt.imshow(data)
+plt.contour(fit(*indices(data.shape)))
+plt.show()
+
+    # Draw the 2D Gaussian
+    data = np.exp( summed_viz[0,:,:,labels.index("head-phones")] )
+    params = fitgaussian(data)
+    fit = gaussian(*params)
+    cont = axs[1].contourf(fit(*indices(data.shape)), cmap=cm.copper)
+
+
+
+
+
+from numpy import *
+from scipy import optimize
+
+def gaussian(height, center_x, center_y, width_x, width_y):
+  """Returns a gaussian function with the given parameters"""
+  width_x = float(width_x)
+  width_y = float(width_y)
+  return lambda x,y: height*exp(
+              -(((center_x-x)/width_x)**2+((center_y-y)/width_y)**2)/2)
+
+def moments(data):
+  """Returns (height, x, y, width_x, width_y)
+  the gaussian parameters of a 2D distribution by calculating its
+  moments """
+  total = data.sum()
+  X, Y = indices(data.shape)
+  x = (X*data).sum()/total
+  y = (Y*data).sum()/total
+  col = data[:, int(y)]
+  width_x = sqrt(abs((arange(col.size)-y)**2*col).sum()/col.sum())
+  row = data[int(x), :]
+  width_y = sqrt(abs((arange(row.size)-x)**2*row).sum()/row.sum())
+  height = data.max()
+  return height, x, y, width_x, width_y
+
+def fitgaussian(data):
+  """Returns (height, x, y, width_x, width_y)
+  the gaussian parameters of a 2D distribution found by a fit"""
+  params = moments(data)
+  errorfunction = lambda p: ravel(gaussian(*p)(*indices(data.shape)) -
+                               data)
+  p, success = optimize.leastsq(errorfunction, params)
+  return p
+
+
+
+
+
+
+
+
+plt.contour(fit(*indices(data.shape)), cmap=cm.copper)
+ax = gca()
+(height, x, y, width_x, width_y) = params
+
+plt.text(0.95, 0.05, """
+x : %.1f
+y : %.1f
+width_x : %.1f
+width_y : %.1f""" %(x, y, width_x, width_y),
+        fontsize=16, horizontalalignment='right',
+        verticalalignment='bottom', transform=ax.transAxes)
+
+plt.show()
 
 
 
