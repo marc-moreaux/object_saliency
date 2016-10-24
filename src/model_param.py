@@ -77,26 +77,35 @@ class Model_params:
         "log_file"   : "../results/"+self.get_name()+".txt"
       }
     elif self.dataset == DB_type.VOC2012 :
-      sys.path.append("/home/cuda/datasets/VOC2012")
-      from voc2012_getter import get_batch
-      self.get_batch = get_batch
+      if os.path.isdir("/home/cuda/datasets/VOC2012/"):
+        sys.path.append("/home/cuda/datasets/VOC2012")
+        from voc2012_getter import get_batch
+        self.get_batch = get_batch
+      else :
+        print "WARNING: could not import VOC2012_getter"
       paths = {
         "save_model" : '../models/'+self.dataset+'/'+self.get_name()+'/model' ,
         "log_file"   : "../results/"+self.get_name()+".txt"
       }
     elif self.dataset == DB_type.CALTECH256 :
-      sys.path.append("/home/cuda/datasets/caltech256/")
-      from caltech256_getter import get_batch
-      self.get_batch = get_batch
+      if os.path.isdir("/home/cuda/datasets/caltech256/"):
+        sys.path.append("/home/cuda/datasets/caltech256/")
+        from caltech256_getter import get_batch
+        self.get_batch = get_batch
+      else :
+        print "WARNING: could not import caltech256_getter"
       paths = {
         "save_model" : '../models/'+self.dataset+'/'+self.get_name()+'/model' ,
         "log_file"   : "../results/"+self.get_name()+".txt"
       }
     elif self.dataset == DB_type.EXT_MNIST :
-      sys.path.append("/home/cuda/datasets/mnist/")
-      import mnist_getter
-      self.get_batch  = mnist_getter.get_batch_224
-      self.epoch_size = mnist_getter.EPOCH_SIZE
+      if os.path.isdir("/home/cuda/datasets/mnist/"):
+        sys.path.append("/home/cuda/datasets/mnist/")
+        import mnist_getter
+        self.get_batch  = mnist_getter.get_batch_224
+        self.epoch_size = mnist_getter.EPOCH_SIZE
+      else :
+        print "WARNING: could not import mnist_getter"
       paths = {
         "save_model" : '../models/'+self.dataset+'/'+self.get_name()+'/model' ,
         "log_file"   : "../results/"+self.get_name()+".txt"
