@@ -106,6 +106,13 @@ class Forward_model:
     """
     # Reshape image
     if resize == True:
+      # crop from center 
+      short_edge = min(img.shape[:2]) 
+      yy = int((img.shape[0] - short_edge) / 2)
+      xx = int((img.shape[1] - short_edge) / 2)
+      img = img[yy: yy + short_edge, xx: xx + short_edge]
+
+      # resize
       img = resize(img, [224,224])
       img = img.reshape(1,224,224,3)
     tup = self.forward_images(img, visualize)
