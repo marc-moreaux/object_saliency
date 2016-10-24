@@ -229,7 +229,16 @@ def updatefig(*args):
     # Update the axis
     ims[0].set_array( img )
     for i in range(len(lbl_idx)):
-      ims[i+1].set_array( np.exp(summed_viz[0,:,:,lbl_idx[i]]) )
+      data = np.exp( summed_viz[0,:,:,lbl_idx[i]] )
+      ims[i+1].set_array( data )
+      
+      # if max value is over threshold,  show class
+      if data.max() > 20000.:
+        print data.max() > 20000.
+        print "%d => %f"%(i, data.max())
+        params = fitgaussian(data)
+        fit    = gaussian(*params)
+        axs[i+1].contourf(fit(*indices(data.shape)), cmap=cm.copper)
     
     print_vis_stat(summed_viz, lbl_idx)
     print_sorted_preds(named_preds)
@@ -241,17 +250,6 @@ fig.show()
 
 
 
-
-
-plt.imshow(data)
-plt.contour(fit(*indices(data.shape)))
-plt.show()
-
-    # Draw the 2D Gaussian
-    data = np.exp( summed_viz[0,:,:,labels.index("head-phones")] )
-    params = fitgaussian(data)
-    fit = gaussian(*params)
-    cont = axs[1].contourf(fit(*indices(data.shape)), cmap=cm.copper)
 
 
 
@@ -288,7 +286,7 @@ def fitgaussian(data):
   params = moments(data)
   errorfunction = lambda p: ravel(gaussian(*p)(*indices(data.shape)) -
                                data)
-  p, success = optimize.leastsq(errorfunction, params)
+  p, success = optimize.leastsq(errorfunction, params, maxfev=20)
   return p
 
 
