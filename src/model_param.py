@@ -197,7 +197,7 @@ class Model_params:
   def get_loss(self, tf_output, tf_labels, conv6):
     tf_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits( tf_output, tf_labels ))
     if self.l2_weight > 0 :
-      weights_only  = [x for x in tf.trainable_variables() if x.name.endswith('W:0')]
+      weights_only  = [x for x in tf.trainable_variables() if x.name.endswith('W:0') and "conv6" not in x.name]
       weight_decay  = tf.reduce_sum(tf.pack([tf.nn.l2_loss(x) for x in weights_only])) * self.l2_weight
       tf_loss      += weight_decay
     if self.l2_gap > 0:

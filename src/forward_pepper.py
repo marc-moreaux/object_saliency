@@ -16,8 +16,8 @@ import os
 ######################################
 ###  Parameter
 ######################################
-mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-5)
-model  = Forward_model(mod_param, 14)
+mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-7)
+model  = Forward_model(mod_param, 38)
 labels = model.mod_param.labels
 PEPPER_IP  = "10.0.165.29"  # jmot.local
 PEPPER_IP  = "10.0.161.43" # jarc.local
@@ -97,8 +97,8 @@ RGB_tuples = map(lambda x: colorsys.hsv_to_rgb(*x), HSV_tuples)
 colors = RGB_tuples
 
 def print_sorted_preds(named_preds):
-  for name, p in sorted(named_preds, key=lambda a:a[1])[-5:]:
-    print "%-15s %3.3f"%(name,p)
+  for name, p, x, y in sorted(named_preds, key=lambda a:a[1])[-5:]:
+    print "%-15s %3.3f at (%1.1f;%1.1f)"%(name,p,x,y)
   print '--'
 
 def reshape_vis(vis, index):
@@ -152,8 +152,6 @@ def get_img_pred_and_vis(do_resize=True):
   named_preds, vis = model.forward_image(img, True)
   return img, named_preds, vis
 
-
-
 def print_vis_stat(vis, idx=None):
   """Expected shape is (14,14,x)"""
   idx = range(vis.shape[-1]) if idx == None else idx
@@ -164,32 +162,9 @@ def print_vis_stat(vis, idx=None):
       print "%10s " % model.labels[idx][:10]
     else : 
       print "%10s " % model.labels[idx][:10],
+  print ''
 
 
-
-# import sys; sys.path.append("/home/cuda/datasets/mnist/")
-# import mnist_getter
-
-# batch = mnist_getter.get_batch_224(batch_size=10).next()
-
-# for img_idx in range(1):
-#   img   = batch[0][img_idx]
-#   lbl   = batch[1][img_idx]
-#   named_preds, vis = model.forward_image(img, True)
-  
-#   summed_viz = summed_vis(model, vis)
-#   print_vis_stat(summed_viz)
-  
-#   print lbl
-#   fig, axs = plt.subplots(3,10)
-#   for idx, ax in enumerate([b for a in axs for b in a]):
-#     if idx < 10*2:
-#       tmp_idx = (idx*2)%20+idx/10
-#       ax.imshow(vis[0][0,:,:,tmp_idx], vmin=-15, vmax=15)
-#     elif idx < 10*3:
-#       ax.imshow(summed_viz[0,:,:,idx-20], vmin=-15, vmax=15)
-  
-#   plt.show()
 
 
 
@@ -230,15 +205,8 @@ def updatefig(*args):
     ims[0].set_array( img )
     for i in range(len(lbl_idx)):
       data = np.exp( summed_viz[0,:,:,lbl_idx[i]] )
-      ims[i+1].set_array( data )
+      ims[i+1].set_array( data )      
       
-      # if max value is over threshold,  show class
-      if data.max() > 20000.:
-        print data.max() > 20000.
-        print "%d => %f"%(i, data.max())
-        params = fitgaussian(data)
-        fit    = gaussian(*params)
-        axs[i+1].contourf(fit(*indices(data.shape)), cmap=cm.copper)
     
     print_vis_stat(summed_viz, lbl_idx)
     print_sorted_preds(named_preds)
@@ -253,63 +221,21 @@ fig.show()
 
 
 
-
-
-from numpy import *
-from scipy import optimize
-
-def gaussian(height, center_x, center_y, width_x, width_y):
-  """Returns a gaussian function with the given parameters"""
-  width_x = float(width_x)
-  width_y = float(width_y)
-  return lambda x,y: height*exp(
-              -(((center_x-x)/width_x)**2+((center_y-y)/width_y)**2)/2)
-
-def moments(data):
-  """Returns (height, x, y, width_x, width_y)
-  the gaussian parameters of a 2D distribution by calculating its
-  moments """
-  total = data.sum()
-  X, Y = indices(data.shape)
-  x = (X*data).sum()/total
-  y = (Y*data).sum()/total
-  col = data[:, int(y)]
-  width_x = sqrt(abs((arange(col.size)-y)**2*col).sum()/col.sum())
-  row = data[int(x), :]
-  width_y = sqrt(abs((arange(row.size)-x)**2*row).sum()/row.sum())
-  height = data.max()
-  return height, x, y, width_x, width_y
-
-def fitgaussian(data):
-  """Returns (height, x, y, width_x, width_y)
-  the gaussian parameters of a 2D distribution found by a fit"""
-  params = moments(data)
-  errorfunction = lambda p: ravel(gaussian(*p)(*indices(data.shape)) -
-                               data)
-  p, success = optimize.leastsq(errorfunction, params, maxfev=20)
-  return p
-
-
-
-
-
-
-
-
-plt.contour(fit(*indices(data.shape)), cmap=cm.copper)
-ax = gca()
-(height, x, y, width_x, width_y) = params
-
-plt.text(0.95, 0.05, """
-x : %.1f
-y : %.1f
-width_x : %.1f
-width_y : %.1f""" %(x, y, width_x, width_y),
-        fontsize=16, horizontalalignment='right',
-        verticalalignment='bottom', transform=ax.transAxes)
-
+i=0
+data = summed_viz[0,:,:,lbl_idx[i]]
+plt.imshow(data)
 plt.show()
 
+
+
+summed_viz = summed_vis(model, vis)
+data       = summed_viz
+
+
+# computes the position of the max per axis [-1;1] 
+max_pos = lambda arr: (arr.argmax(axis=1) / float(arr.shape[-1]) *2)-1
+xx   = max_pos( data.sum(axis=1) )
+yy   = max_pos( data.sum(axis=2) )
 
 
 

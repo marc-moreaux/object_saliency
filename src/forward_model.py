@@ -97,7 +97,7 @@ class Forward_model:
       named_preds = [(self.labels[idx], p, x, y) for idx,(p,x,y) in enumerate(zip(preds, xx, yy))]
     return named_preds
   
-  def forward_image(self, img, visualize=False, resize=True):
+  def forward_image(self, img, visualize=False, do_resize=True):
     """Retrieve prediction's text and visualisation
     
       Keyword arguments:
@@ -105,7 +105,7 @@ class Forward_model:
         vis -- saliency map to visualize (-1 for best prediction)
     """
     # Reshape image
-    if resize == True:
+    if do_resize == True:
       # crop from center 
       short_edge = min(img.shape[:2]) 
       yy = int((img.shape[0] - short_edge) / 2)

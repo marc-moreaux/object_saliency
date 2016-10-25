@@ -47,7 +47,7 @@ def my_train(mod_param, n_epochs=15):
     log_file =open(mod_param.paths["log_file"], 'w',0) 
     tf.reset_default_graph()
     tf_learning_rate = tf.placeholder( tf.float32, [])
-    images_tf = tf.placeholder( tf.float32, [None, 224, 224, 3], name="images")
+    images_tf = tf.placeholder( tf.float32, [None, None, None, 3], name="images")
     labels_tf = tf.placeholder( tf.int64, [None], name='labels')
     detector  = Detector(mod_param)
     p1,p2,p3,p4,conv5, conv6, gap, output = detector.inference(images_tf)
@@ -119,23 +119,25 @@ def my_train(mod_param, n_epochs=15):
 
 
 
-mod_param  = model_param.Model_params("EXT_MNIST", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-6)
+
+
+mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 2e-7)
+my_train(mod_param, 45)
+
+mod_param  = model_param.Model_params("EXT_MNIST", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-8)
 my_train(mod_param, 15)
 
-mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',  8e-6, 5e-5, 1e-6)
+mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-7)
+my_train(mod_param, 45)
+
+mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-8)
 my_train(mod_param, 15)
 
-mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5_S" , 'rmsProp',   1e-5, 5e-5, 1e-6)
+mod_param  = model_param.Model_params("PERSO", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-7)
+my_train(mod_param, 45)
+
+mod_param  = model_param.Model_params("PERSO", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-8)
 my_train(mod_param, 15)
-
-mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-7)
-my_train(mod_param, 15)
-
-
-
-
-
-
 
 
 

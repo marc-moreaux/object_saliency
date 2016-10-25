@@ -28,11 +28,11 @@ class DetectObject:
       self.model = Forward_model(self.mod_param, 38)
   
   
-  def detectInBuffer( self, npBuffer , resize=True):
+  def detectInBuffer( self, npBuffer , do_resize=True):
     """
     return une liste d'objet avec confiance
     """
-    named_preds, vis = self.model.forward_image(npBuffer,-1)
+    named_preds, vis = self.model.forward_image(npBuffer,-1, do_resize)
     return named_preds, vis
 
   def getNativeImageProperies( self ):
