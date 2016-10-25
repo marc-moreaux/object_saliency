@@ -92,9 +92,9 @@ class Forward_model:
   
   def to_named_pred(self, preds, xx=None, yy=None):
     if xx == None :
-      named_preds = [(self.labels[idx], p, x, y) for idx,p in enumerate(preds)]
+      named_preds = [(self.labels[idx], p, -1, -1) for idx,p in enumerate(preds)]
     else :
-      named_preds = [(self.labels[idx], p, x, y) for idx,(p,x,y) in enumerate(zip(preds, xx, yy))]
+      named_preds = [(self.labels[idx], p,  x,  y) for idx,(p,x,y) in enumerate(zip(preds, xx, yy))]
     return named_preds
   
   def forward_image(self, img, visualize=False, do_resize=True):
