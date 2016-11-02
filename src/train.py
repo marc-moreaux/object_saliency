@@ -119,6 +119,9 @@ def my_train(mod_param, n_epochs=15):
 
 
 
+mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-4, 5e-5, 5e-7)
+my_train(mod_param, 45)
+
 
 
 mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 2e-7)
