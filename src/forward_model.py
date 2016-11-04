@@ -74,9 +74,9 @@ class Forward_model:
 
     # computes the position of the max per axis [-1;1]
     summed_viz = self.summed_vis(conv6_val)
-    max_pos = lambda arr: (arr.argmax(axis=1) / float(arr.shape[-1]) *2)-1
-    xx   = max_pos( summed_viz.sum(axis=1) )
-    yy   = max_pos( summed_viz.sum(axis=2) )
+    max_pos = lambda arr: (arr.argmax(axis=1) / float(arr.shape[-2]) *2)-1
+    xx      = max_pos( summed_viz.sum(axis=1) )
+    yy      = max_pos( summed_viz.sum(axis=2) )
 
     named_preds = map(self.to_named_pred, preds, xx, yy)
     return named_preds, conv6_val
@@ -116,6 +116,8 @@ class Forward_model:
       img = resize(img, [224,224])
       img = img.reshape(1,224,224,3)
     tup = self.forward_images(img, visualize)
+    if visualize == False:
+      return tup[0][0]
     return tup[0][0], tup[1]
   
   def forward_images(self, imgs, visualize=False):
