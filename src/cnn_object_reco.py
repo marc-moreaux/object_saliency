@@ -69,22 +69,22 @@ class DetectObject:
 
 
 def main():
-pictures = [
-"image1474967223.33.jpg",  "image1474967224.13.jpg",  "image1474967224.33.jpg",
-"image1474967249.83.jpg",  "image1474967378.31.jpg",  "image1474967390.56.jpg",
-"image1474967402.23.jpg",  "image1474967413.34.jpg",  "image1474967422.34.jpg",
-"image1474967433.6.jpg" ,  "image1474967445.84.jpg",  "image1474967457.37.jpg",
-"image1474967486.98.jpg",]
-# pictures = ["/home/mmoreaux/Pictures/"+p for p in pictures]
-pictures = ["/home/cuda/datasets/Perso_photo/"+p for p in pictures]
+    pictures = [
+    "image1474967223.33.jpg",  "image1474967224.13.jpg",  "image1474967224.33.jpg",
+    "image1474967249.83.jpg",  "image1474967378.31.jpg",  "image1474967390.56.jpg",
+    "image1474967402.23.jpg",  "image1474967413.34.jpg",  "image1474967422.34.jpg",
+    "image1474967433.6.jpg" ,  "image1474967445.84.jpg",  "image1474967457.37.jpg",
+    "image1474967486.98.jpg",]
+    # pictures = ["/home/mmoreaux/Pictures/"+p for p in pictures]
+    pictures = ["/home/cuda/datasets/Perso_photo/"+p for p in pictures]
 
 
-detect = DetectObject.Instance()
-for path in pictures:
-  preds = detect.detectInFilename(path)[0]
-  preds = [p for p in preds if p[0] in detect.toDetect]
-  preds = sorted(preds, key=lambda a:a[1], reverse=True)
-  print preds[:2]
+    detect = DetectObject.Instance()
+    for path in pictures:
+      preds = detect.detectInFilename(path)[0]
+      preds = [p for p in preds if p[0] in detect.toDetect]
+      preds = sorted(preds, key=lambda a:a[1], reverse=True)
+      print preds[:2]
 
 
 
