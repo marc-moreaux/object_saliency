@@ -75,8 +75,8 @@ def main():
     "image1474967402.23.jpg",  "image1474967413.34.jpg",  "image1474967422.34.jpg",
     "image1474967433.6.jpg" ,  "image1474967445.84.jpg",  "image1474967457.37.jpg",
     "image1474967486.98.jpg",]
-    pictures = ["/home/mmoreaux/Pictures/"+p for p in pictures]
-    # pictures = ["/home/cuda/datasets/Perso_photo/"+p for p in pictures]
+    # pictures = ["/home/mmoreaux/Pictures/"+p for p in pictures]
+    pictures = ["/home/cuda/datasets/Perso_photo/"+p for p in pictures]
 
 
     detect = DetectObject.Instance()
@@ -89,5 +89,5 @@ def main():
 
 
 
-if __name__ == '__main__':    
+if __name__ == '__main__':
     main()
