@@ -7,14 +7,22 @@ import os
 class Model_type:
   VGG16             = 'VGG16'
   VGG16_CAM3_W_S    = 'VGG16_CAM3_W_S'
+  VGG16_CAM_W_S     = 'VGG16_CAM_W_S'
   VGG16_CAM3_S      = 'VGG16_CAM3_S'
   VGG16_CAM5_S      = 'VGG16_CAM5_S'
   VGG16_CAM7_S      = 'VGG16_CAM7_S'
 
+  VGG16_CAM3b_S     = 'VGG16_CAM3b_S'
+  VGG16_CAM3d_S     = 'VGG16_CAM3d_S'
   VGG16_CAM3e_S     = 'VGG16_CAM3e_S'
   VGG16_CAM5b_S     = 'VGG16_CAM5b_S'
+  VGG16_CAM5d_S     = 'VGG16_CAM5d_S'
   VGG16_CAM5e_S     = 'VGG16_CAM5e_S'
+  VGG16_CAM7b_S     = 'VGG16_CAM7b_S'
   VGG16_CAM7e_S     = 'VGG16_CAM7e_S'
+  VGG16_CAM7d_S     = 'VGG16_CAM7d_S'
+  VGG16_CAM9b_S     = 'VGG16_CAM9b_S'
+  VGG16_CAM9d_S     = 'VGG16_CAM9d_S'
 
   VGG16_CAM5a7a_S   = 'VGG16_CAM5a7a_S'
   VGG16_CAM5b7a_S   = 'VGG16_CAM5b7a_S'
@@ -24,8 +32,6 @@ class Model_type:
   VGG16P_CAM3_S     = 'VGG16P_CAM3_S'
   VGG16P_CAM5_S     = 'VGG16P_CAM5_S'
   VGG16P_CAM7_S     = 'VGG16P_CAM7_S'
-
-
 
 class DB_type:
   PERSO      = 'PERSO'
