@@ -189,7 +189,15 @@ class Model_params:
   
     return trainset, testset
   
-  def get_optimizer(self, tf_learning_rate, loss_tf):
+  def get_optimizer(self, tf_learning_rate, loss_tf, label_idx=-1):
+    """
+    Returns the weights to 
+
+    Params:
+    tf_learning_rate -- Learning rate tensor
+    loss_tf -- The loss tensor
+    label_idx -- The label idx if we want a training on a single GAP
+    """
     # Switch on self.optimizer
     optimizer = {
       "adam"   : tf.train.AdamOptimizer(tf_learning_rate)    ,
@@ -198,14 +206,19 @@ class Model_params:
       }.get(self.optimizer)
     
     grads_and_vars = optimizer.compute_gradients( loss_tf )
+    print [gv[1].name for gv in grads_and_vars]
     
     # set <grads_and_vars>
     if   self.mod_type == Model_type.VGG16:
       grads_and_vars = [(gv[0], gv[1]) if ('fc6' in gv[1].name or 'fc7' in gv[1].name or 'fc8' in gv[1].name) else (gv[0]*0.1, gv[1]) for gv in grads_and_vars]
-    elif self.mod_type == Model_type.VGG16_CAM3_W_S:
+    elif "_W_S" in self.mod_type: # == Model_type.VGG16_CAM3_W_S:
       grads_and_vars = [(gv[0], gv[1]) if ('conv6' in gv[1].name or 'GAP' in gv[1].name) else (gv[0]*0.1, gv[1]) for gv in grads_and_vars]
     else :
       grads_and_vars = [(gv[0], gv[1]) if ('conv6' in gv[1].name) else (gv[0]*0.1, gv[1]) for gv in grads_and_vars]
+
+    # Only modify the desired idx, nothing else changes in the network
+    if label_idx >= 0:
+      grads_and_vars = [(gv[0], gv[1]) if ('conv6' in gv[1].name) else (gv[0]*0, gv[1]) for gv in grads_and_vars]
   
     train_op = optimizer.apply_gradients( grads_and_vars )
     return optimizer, train_op
@@ -223,8 +236,19 @@ class Model_params:
       txt += "l1gap"+(".%1.e"%self.l1_gap).replace("0","")+'.'
     return txt[:-1]
   
-  def get_loss(self, tf_output, tf_labels, conv6):
-    tf_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits( tf_output, tf_labels ))
+  def get_loss(self, tf_output, tf_labels, conv6=None):
+    """
+    Returns the loss of a network
+
+    Params:
+    tf_output -- The output tensor 
+    tf_labels -- The label tensor 
+    conv6 -- the conv6 layer (the one which is going to be Meaned)
+    """
+    if label_idx == -1:
+      tf_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits( tf_output, tf_labels ))
+    else 
+      tf_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits( tf_output, tf_labels ))
     if self.l2_weight > 0 :
       weights_only  = [x for x in tf.trainable_variables() if x.name.endswith('W:0') and "conv6" not in x.name]
       weight_decay  = tf.reduce_mean(tf.pack([tf.nn.l2_loss(x) for x in weights_only])) * self.l2_weight
