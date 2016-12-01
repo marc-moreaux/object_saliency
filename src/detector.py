@@ -121,6 +121,9 @@ class Detector():
       return fc
 
   def _VGG16(self):
+    """
+    End of the original VGG16 network
+    """
     pool5   = tf.nn.max_pool(self.conv5_3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
                          padding='SAME', name='pool')
     fc6     = self.new_fc_layer( pool5, 1024,          'fc6' )
@@ -130,6 +133,12 @@ class Detector():
     return self.pool1, self.pool2, self.pool3, self.pool4, self.conv5_3, None, None, self.output
 
   def _VGG16_CAM_W_S(self, cam_size):
+     """
+    End of the VGG16 - CAM network, as in the paper
+
+    Params:
+    cam_size -- 2Dsize of the cnn kernel
+    """
     conv6 = self.new_conv_layer( self.conv5_3, [cam_size,cam_size,512,1024], "conv6")
     gap   = tf.reduce_mean( conv6, [1,2] )
     with tf.variable_scope("GAP"):
@@ -141,6 +150,13 @@ class Detector():
     return self.pool1, self.pool2, self.pool3, self.pool4, self.conv5_3, conv6, gap, output
 
   def _VGG16_CAMX_S(self, cam_filter_size, end_pooling=False):
+    """
+    End of the my version of VGG16-CAM net with one ccn
+
+    Params:
+    cam_filter_size -- 2Dsize of the cnn kernel
+    end_polling -- add a pooling after conv6, before GAP
+    """
     if end_pooling == True:
       pool5   = tf.nn.max_pool(self.conv5_3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
                                padding='SAME', name='pool5')
@@ -152,6 +168,13 @@ class Detector():
     return self.pool1, self.pool2, self.pool3, self.pool4, self.conv5_3, conv6, gap, output
 
   def _VGG16_CAMXX_S(self, cam_filter_size, end_pooling=False):
+    """
+    End of the my version of VGG16-CAM net with many ccns
+
+    Params:
+    cam_filter_size -- 2Dsize of the cnn kernel
+    end_polling -- add a pooling after conv6, before GAP
+    """
     in_to_conv6 = self.conv5_3
     if end_pooling == True:
       pool5   = tf.nn.max_pool(self.conv5_3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
