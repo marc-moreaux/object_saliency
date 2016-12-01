@@ -35,6 +35,7 @@ class Model_type:
 
 class DB_type:
   PERSO      = 'PERSO'
+  PERSO1     = 'PERSO1'
   CALTECH256 = 'CALTECH256'
   ACTION40   = 'ACTION40'
   VOC2012    = 'VOC2012'
@@ -49,7 +50,7 @@ class Labels_names:
 
 
 class Model_params:
-  def __init__(self, dataset, mod_type, optimizer, learning_rate, l2_weight=.0, l2_gap=0):
+  def __init__(self, dataset, mod_type, optimizer, learning_rate, l2_weight=.0, l2_gap=0, l1_gap=0):
     """ 
       
       parameters:
@@ -66,6 +67,7 @@ class Model_params:
     self.lr        = learning_rate
     self.l2_weight = l2_weight
     self.l2_gap    = l2_gap
+    self.l1_gap    = l1_gap
     self.paths     = self._set_paths()
     self.labels    = self._set_labels()
     self.n_labels  = len(self.labels)
@@ -75,11 +77,26 @@ class Model_params:
   ### Hidden functions for __init__
   def _set_paths(self):
     if self.dataset == DB_type.PERSO :
+      if os.path.isdir("/home/cuda/datasets/perso/"):
+        sys.path.append("/home/cuda/datasets/perso")
+        from perso_getter import get_batch
+        self.get_batch = get_batch
+      else :
+        print "WARNING: could not import perso_getter"
       paths = {
-        "dataset"    : '/home/cuda/datasets/'+self.dataset.lower()+'/'             ,
-        "trainset"   : '/home/cuda/datasets/'+self.dataset.lower()+'/'+'train.pkl' ,
-        "testset"    : '/home/cuda/datasets/'+self.dataset.lower()+'/'+'test.pkl'  ,
-        "save_model" : '../models/'+self.dataset+'/'+self.get_name()+'/model'      ,
+        "save_model" : '../models/'+self.dataset+'/'+self.get_name()+'/model' ,
+        "log_file"   : "../results/"+self.get_name()+".txt"
+      }
+    if self.dataset == DB_type.PERSO1 :
+      if os.path.isdir("/home/cuda/datasets/perso1/"):
+        sys.path.append("/home/cuda/datasets/perso1")
+        import perso1_getter
+        self.get_batch = perso1_getter.get_batch
+        self.labels = perso1_getter.getter_inst.classes
+      else :
+        print "WARNING: could not import perso_getter"
+      paths = {
+        "save_model" : '../models/'+self.dataset+'/'+self.get_name()+'/model' ,
         "log_file"   : "../results/"+self.get_name()+".txt"
       }
     elif self.dataset == DB_type.VOC2012 :
@@ -133,6 +150,8 @@ class Model_params:
     if   self.dataset == DB_type.PERSO :
       self.labels = Labels_names.PERSO
       return self.labels
+    if   self.dataset == DB_type.PERSO1 :
+      return self.labels
     elif self.dataset == DB_type.VOC2012 :
       self.labels = Labels_names.VOC2012
       return self.labels
@@ -162,9 +181,11 @@ class Model_params:
   
     if self.dataset == DB_type.ACTION40 :
       print "NOT IMPLEMENTED YET"
+      raise NotImplementedError
   
     if self.dataset == DB_type.CALTECH256 :
       print "NOT IMPLEMENTED YET"
+      raise NotImplementedError
   
     return trainset, testset
   
@@ -198,21 +219,30 @@ class Model_params:
       txt += "l2w"+(".%1.e"%self.l2_weight).replace("0","")+'.'
     if self.l2_gap > 0 :
       txt += "l2gap"+(".%1.e"%self.l2_gap).replace("0","")+'.'
+    if self.l1_gap > 0 :
+      txt += "l1gap"+(".%1.e"%self.l1_gap).replace("0","")+'.'
     return txt[:-1]
   
   def get_loss(self, tf_output, tf_labels, conv6):
     tf_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits( tf_output, tf_labels ))
     if self.l2_weight > 0 :
       weights_only  = [x for x in tf.trainable_variables() if x.name.endswith('W:0') and "conv6" not in x.name]
-      weight_decay  = tf.reduce_sum(tf.pack([tf.nn.l2_loss(x) for x in weights_only])) * self.l2_weight
+      weight_decay  = tf.reduce_mean(tf.pack([tf.nn.l2_loss(x) for x in weights_only])) * self.l2_weight
       tf_loss      += weight_decay
     if self.l2_gap > 0:
       if conv6 == None:
         print "WARNING : found no conv6 vars layers on model..."
       if type(conv6) != type(list()):
         conv6 = [conv6]
-      print conv6
+      print "Applying the conv6 loss (l2)"+str(conv6)
       tf_loss += tf.reduce_mean(tf.pack([tf.nn.l2_loss(x) for x in conv6])) * self.l2_gap
+    if self.l1_gap > 0:
+      if conv6 == None:
+        print "WARNING : found no conv6 vars layers on model..."
+      if type(conv6) != type(list()):
+        conv6 = [conv6]
+      print "Applying the conv6 loss (l1)"+str(conv6)
+      tf_loss += tf.reduce_mean(tf.pack([tf.abs(x) for x in conv6])) * self.l1_gap
     return tf_loss
 
 
