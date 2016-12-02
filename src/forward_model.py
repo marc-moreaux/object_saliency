@@ -81,7 +81,7 @@ class Forward_model:
     # Resize each summed_viz to its original size (size of input image)
     if viz.shape[:2] != imgs.shape[1:3]:
       viz = np.array(
-              [ skimage.transform.resize(viz[:,:,idx], imgs[idx].shape[1:3])
+              [ skimage.transform.resize(viz[:,:,idx], imgs[idx].shape[:2])
                 for idx in range(len(imgs))
                 if viz.shape[0] != imgs.shape[1]
               ] )
@@ -213,8 +213,8 @@ class Forward_model:
   def _check_image(self, img):
     if img.shape[-1] == 1:
       img = skimage.color.greytorgb(img)
-    if img.shape[-3:] != (224,224,3):
-      print "WARNING: FUCKED UP SHAPE, not (224*224*3) !!"
+    #if img.shape[-3:] != (224,224,3):
+    #  print "WARNING: FUCKED UP SHAPE, not (224*224*3) !!"
     if len(img.shape) == 3:
       img = img.reshape([1,]+list(img.shape))
     return img
