@@ -16,7 +16,7 @@ def runServer():
     
     s = abcdk.socket_receive.SocketReceiver()
     nPortNumber = 10000
-    s.run( nPortNumber, analyseImage )
+    s.run( nPortNumber, analyseImage, strPathStoreAllMessages = "/home/gpu/imgs/" )
     #time.sleep( 100    
 # runServer - end
 
