@@ -78,6 +78,9 @@ voc_valid  = datasets.factory.__sets['voc_2012_val']()
 
 mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM_W_S", 'rmsProp',   8e-6, 5e-5)
 model  = Forward_model(mod_param, 4)
+# mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-8)
+# model  = Forward_model(mod_param, 9)
+
 
 # gen = mod_param.get_batch('valid',10, im_size=0, official_splits=True)
 # batch_images, batch_labels = gen.next()
@@ -102,29 +105,44 @@ import my_images
 
 # Compute all the predictions desired
 # all_boxes[class][image] = [] or np.array of shape #dets x 5
-all_boxes = [[] for _ in range(model.n_labels)]
+all_boxes  = [[] for _ in range(model.n_labels)]
+all_boxes2 = [[] for _ in range(model.n_labels)]
+
 
 for img_idx in range(voc_valid.num_images):
   print img_idx
   img_path = voc_valid.image_path_at(img_idx)
   img = my_images.load_image(img_path, resize=False)
   named_pred, summed_viz = model.forward_image(img, visualize=True, do_resize=False, names="BoundingBoxes")
+  named_pred2 = model.forward_image(img, visualize=False, do_resize=True, names="Predictions")
   
-  best_pred = sorted(named_pred, key=lambda a:a[1], reverse=True)[0]
+  best_idx  = np.argmax([p[1] for p in named_pred])
+  best_idx2 = np.argmax([p[1] for p in named_pred2])
+  # best_pred = sorted(named_pred, key=lambda a:a[1], reverse=True)[0]
   # Fill all_boxes[class][image]
   for c_idx,pred in enumerate(named_pred):
-    if best_pred == pred:
-      print best_pred
-      name,p,l,t,r,b = best_pred
+    if c_idx == best_idx:
+      print pred
+      name,p,l,t,r,b = pred
       t = img.shape[0] - t
       b = img.shape[0] - b
       all_boxes[c_idx].append(np.array([l,t,r,b,p]).reshape(1,-1))
     else:
       all_boxes[c_idx].append([])
+    if c_idx == best_idx2:
+      print pred
+      name,p,l,t,r,b = pred
+      t = img.shape[0] - t
+      b = img.shape[0] - b
+      all_boxes2[c_idx].append(np.array([l,t,r,b,p]).reshape(1,-1))
+    else:
+      all_boxes2[c_idx].append([])
 
 
-all_boxes = [None] + all_boxes
+all_boxes  = [None] + all_boxes
+all_boxes2 = [None] + all_boxes2
 
-voc_valid.evaluate_detections(all_boxes, output_dir='output')
+
+voc_valid.evaluate_detections(all_boxes2, output_dir='output')
 
 
