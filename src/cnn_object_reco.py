@@ -13,7 +13,7 @@ class DetectObject:
     self.model = None
     self.loadDetector()
     self.toDetect =["soda-can",           "people",
-                    "fire-extinguisher",  "light-house",
+                    "fire-extinguisher",  "tennis-ball",
                     "lathe",              "t-shirt",
                     "jesus-christ",       "flashlight",
                     "soccer-ball",        "computer-monitor",
@@ -27,7 +27,7 @@ class DetectObject:
                     "eyeglasses",         "computer-mouse",
                     "top-hat",            "beer-mug",
                     "watch-101",          "coffee-mug",
-                    "tennis-ball",]
+                    "fried-egg",]
   
   def __del__( self ):
     #~ if loaded:
@@ -44,11 +44,16 @@ class DetectObject:
       self.model = Forward_model(self.mod_param, 44)
   
   
-  def detectInBuffer( self, npBuffer , do_resize=True):
+  def detectInBuffer( self, npBuffer, restrict_detection=True, do_resize=True):
     """
     return une liste d'objet avec confiance
     """
     named_preds, vis = self.model.forward_image(npBuffer,-1, do_resize)
+    if restrict_detection == True:
+      print vis[0].shape
+      
+      tmp = [(p,vis[0][:,:,:,idx]) for idx,p in enumerate(named_preds) if p[0] in detect.toDetect]
+      named_preds, vis = [p[0] for p in tmp], [v[1] for v in tmp]
     return named_preds, vis
   
   def getNativeImageProperies( self ):
@@ -57,18 +62,18 @@ class DetectObject:
     """
     return [224,224,3]
   
-  def detectInFilename( self, strFilename ):
+  def detectInFilename( self, strFilename, restrict_detection=True ):
     """
     return une liste d'objet avec confiance
     """
     # im = cv2.imread( strFilename )
     im = my_images.load_image( strFilename )
-    return self.detectInBuffer( im )
+    return self.detectInBuffer( im, restrict_detection=restrict_detection )
 
 # class DetectObject - end
 
 
-def main():
+# def main():
 pictures = [
 "image1474967223.33.jpg",  "image1474967224.13.jpg",  "image1474967224.33.jpg",
 "image1474967249.83.jpg",  "image1474967378.31.jpg",  "image1474967390.56.jpg",
@@ -82,12 +87,10 @@ pictures = ["/home/cuda/datasets/Perso_photo/"+p for p in pictures]
 detect = DetectObject.Instance()
 for path in pictures:
   preds = detect.detectInFilename(path)[0]
-  preds = [p for p in preds if p[0] in detect.toDetect]
   preds = sorted(preds, key=lambda a:a[1], reverse=True)
-  print preds[:2]
+  print preds
 
 
 
-
-if __name__ == '__main__':    
+if __name__ == '__main__':
     main()

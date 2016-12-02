@@ -13,14 +13,18 @@ from os.path import isfile, join
 # Declare paths
 model_label_path = "../models/caltech_labels.pkl"
 weight_path = '../caffe_layers_value.pickle'
-model_path = '../models/caltech256/model-2'
+model_path = '../models/caltech256/model-3'
 jpg_folder_path = "../img_test"
 
-imgPath = [join(jpg_folder_path, f) for f in listdir(jpg_folder_path) if isfile(join(jpg_folder_path, f))]
+imgPath = [join(jpg_folder_path, f) 
+           for f in listdir(jpg_folder_path) 
+             if isfile(join(jpg_folder_path, f))
+             and ('jpg' or 'jpeg' or 'png') in f ]
 
 # load the caltech model
-f = open(model_label_path,"rb")
-label_dict = pickle.load(f)
+with open(model_label_path, 'rb') as f:
+  label_dict = pickle.load(f)
+
 n_labels = len(label_dict)
 batch_size = 1
 
