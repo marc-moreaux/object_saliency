@@ -133,7 +133,7 @@ class Detector():
     return self.pool1, self.pool2, self.pool3, self.pool4, self.conv5_3, None, None, self.output
 
   def _VGG16_CAM_W_S(self, cam_size):
-     """
+    """
     End of the VGG16 - CAM network, as in the paper
 
     Params:
