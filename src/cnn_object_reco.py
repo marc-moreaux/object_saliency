@@ -84,29 +84,29 @@ class DetectObject:
 # class DetectObject - end
 
 
-def main():
-    pictures = [
-    "image1474967223.33.jpg",  "image1474967224.13.jpg",  "image1474967224.33.jpg",
-    "image1474967249.83.jpg",  "image1474967378.31.jpg",  "image1474967390.56.jpg",
-    "image1474967402.23.jpg",  "image1474967413.34.jpg",  "image1474967422.34.jpg",
-    "image1474967433.6.jpg" ,  "image1474967445.84.jpg",  "image1474967457.37.jpg",
-    "image1474967486.98.jpg",]
-    # pictures = ["/home/mmoreaux/Pictures/"+p for p in pictures]
-    # pictures = ["/home/cuda/datasets/Perso_photo/"+p for p in pictures]
-    pictures = ["../test_images/"+p for p in pictures]
+#def main():
+pictures = [
+"image1474967223.33.jpg",  "image1474967224.13.jpg",  "image1474967224.33.jpg",
+"image1474967249.83.jpg",  "image1474967378.31.jpg",  "image1474967390.56.jpg",
+"image1474967402.23.jpg",  "image1474967413.34.jpg",  "image1474967422.34.jpg",
+"image1474967433.6.jpg" ,  "image1474967445.84.jpg",  "image1474967457.37.jpg",
+"image1474967486.98.jpg",]
+# pictures = ["/home/mmoreaux/Pictures/"+p for p in pictures]
+# pictures = ["/home/cuda/datasets/Perso_photo/"+p for p in pictures]
+pictures = ["../test_images/"+p for p in pictures]
 
 
 
-    detect = DetectObject.Instance()
-    for path in pictures:
-      preds = detect.detectInFilename(path)[0]
-      preds = sorted(preds, key=lambda a:a[1], reverse=True)
-      print( preds )
+detect = DetectObject.Instance()
+for path in pictures:
+  preds = detect.detectInFilename(path)[0]
+  preds = sorted(preds, key=lambda a:a[1], reverse=True)
+  print( preds )
 
-    # results where:
-    """
+# results were:
+"""
 /home/gpu/work/object_saliency/src/forward_model.py:94: FutureWarning: comparison to `None` will result in an elementwise object comparison in the future.
-  if xx == None :
+if xx == None :
 [('laptop-101', 1.9172316, -0.1428571428571429, 0.14285714285714279), ('flashlight', 1.8609635, 0.28571428571428581, 0.4285714285714286)]
 [('soda-can', 1.99108, 0.4285714285714286, 0.0), ('laptop-101', 1.9789326, -0.1428571428571429, 0.14285714285714279)]
 [('computer-monitor', 1.9407232, 0.28571428571428581, 0.14285714285714279), ('soda-can', 1.8740108, 0.4285714285714286, 0.0)]
@@ -121,8 +121,8 @@ def main():
 [('fire-extinguisher', 0.53935093, -0.4285714285714286, -0.85714285714285721), ('lathe', 0.49073964, -0.5714285714285714, 0.14285714285714279)]
 [('people', 1.4568579, -0.7142857142857143, -0.5714285714285714), ('soda-can', 1.0642385, -0.5714285714285714, -0.5714285714285714)]    
 """
-    
 
 
-if __name__ == '__main__':
-    main()
+
+#~ if __name__ == '__main__':
+    #~ main()
