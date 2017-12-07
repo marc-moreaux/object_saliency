@@ -4,6 +4,7 @@ import pickle
 import matplotlib.pyplot as plt
 import model_param
 # import ipdb
+import sys
 
 def split_backward_comp(value, num_or_size_splits, axis):
     # Tensorflow versions < 0.12.0:  tf.split(axis, num_or_size_splits, value)
