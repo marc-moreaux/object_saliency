@@ -20,7 +20,7 @@ class Detector():
 
       with open(weight_file_path,'rb') as f:
           # self.pretrained_weights = pickle.load(f,encoding='latin1')
-          self.pretrained_weights = pickle.load(f)
+          self.pretrained_weights = pickle.load(f, encoding='latin1') # encoding='utf-8': for compat with python3 (explicit encoding)
 
   def get_weight( self, layer_name):
       layer = self.pretrained_weights[layer_name]
@@ -200,13 +200,13 @@ class Detector():
 
   def inference( self, rgb, train=False ):
       rgb *= 255.
-      r, g, b = tf.split(3, 3, rgb)
-      bgr = tf.concat(3,
+      r, g, b = tf.split(rgb, 3, 3) # tf.split(3, 3, rgb) => tf.split(rgb, 3, 3) # 2017-12-07 Alma: for tensorflow > 0.12.0 
+      bgr = tf.concat(
           [
               b-self.image_mean[0],
               g-self.image_mean[1],
               r-self.image_mean[2]
-          ])
+          ],3) # 2017-12-07 Alma: change order after tf 1.0
 
       conv1_1 = self.conv_layer( bgr, "conv1_1" )
       conv1_2 = self.conv_layer( conv1_1, "conv1_2" )

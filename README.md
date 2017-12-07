@@ -12,6 +12,7 @@ Otherwise, download some files at https://drive.google.com/drive/folders/0B8tQbR
 1. ./caffe_layers_value.pickle
 2. ./models/PERSO/PERSO.VGG16_CAM_W_S.rmsProp.1e-5/model-24
 3. ./models/PERSO/PERSO.VGG16_CAM_W_S.rmsProp.1e-5/model-24.meta
+# seen also in the gpu computer: ../models/CALTECH256/CALTECH256.VGG16_CAM5b_S.rmsProp.1e-4.l2w.5e-5.l2gap.5e-7/
 
 Also download the git repository :
 https://github.com/marc-moreaux/cm_perso <br/>

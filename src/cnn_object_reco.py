@@ -1,3 +1,9 @@
+import sys
+try: from importlib import reload # for python3
+except: pass
+reload(sys)
+#sys.setdefaultencoding('utf8') # for python3  # but doesn't works
+
 from singleton import Singleton
 
 from forward_model import Forward_model
@@ -86,7 +92,9 @@ pictures = [
 "image1474967433.6.jpg" ,  "image1474967445.84.jpg",  "image1474967457.37.jpg",
 "image1474967486.98.jpg",]
 # pictures = ["/home/mmoreaux/Pictures/"+p for p in pictures]
-pictures = ["/home/cuda/datasets/Perso_photo/"+p for p in pictures]
+# pictures = ["/home/cuda/datasets/Perso_photo/"+p for p in pictures]
+pictures = ["../test_images/"+p for p in pictures]
+
 
 
 detect = DetectObject.Instance()
