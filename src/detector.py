@@ -33,8 +33,10 @@ class Detector():
       
 
       with open(weight_file_path,'rb') as f:
-          # self.pretrained_weights = pickle.load(f,encoding='latin1')
-          self.pretrained_weights = pickle.load(f, encoding='latin1') # encoding='utf-8': for compat with python3 (explicit encoding)
+            if sys.version_info[0] == 3:
+                self.pretrained_weights = pickle.load(f, encoding='latin1') # encoding='utf-8': for compat with python3 (explicit encoding)
+            else:
+                self.pretrained_weights = pickle.load(f)
 
   def get_weight( self, layer_name):
       layer = self.pretrained_weights[layer_name]
