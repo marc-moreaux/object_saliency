@@ -5,6 +5,20 @@ import matplotlib.pyplot as plt
 import model_param
 # import ipdb
 
+def split_backward_comp(value, num_or_size_splits, axis):
+    # Tensorflow versions < 0.12.0:  tf.split(axis, num_or_size_splits, value)
+    # > tf.split(value, num_or_size_splits, axis)
+    if tf.__version__ <= '0.12.0':
+        return tf.split(axis, num_or_size_splits, value)
+    return tf.split(value, num_or_size_splits, axis)
+
+def concat_backward_comp(values, axis, name):
+    # Tensorflow versions < 0.12.0:  tf.split(axis, num_or_size_splits, value)
+    # > tf.split(value, num_or_size_splits, axis)
+    if tf.__version__ <= '0.12.0':
+        return tf.concat(axis, values, name)
+    return tf.concat(values, axis, name):
+
 class Detector():
   '''
   image_mean : precomputed image means
@@ -200,8 +214,8 @@ class Detector():
 
   def inference( self, rgb, train=False ):
       rgb *= 255.
-      r, g, b = tf.split(rgb, 3, 3) # tf.split(3, 3, rgb) => tf.split(rgb, 3, 3) # 2017-12-07 Alma: for tensorflow > 0.12.0 
-      bgr = tf.concat(
+      r, g, b = tf.split_backward_comp(rgb, 3, 3) # tf.split(3, 3, rgb) => tf.split(rgb, 3, 3) # 2017-12-07 Alma: for tensorflow > 0.12.0 
+      bgr = tf.concat_backward_comp(
           [
               b-self.image_mean[0],
               g-self.image_mean[1],
