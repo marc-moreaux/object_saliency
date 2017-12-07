@@ -63,7 +63,7 @@ class DetectObject:
     if restrict_detection == True:
       print( vis[0].shape )
       
-      tmp = [(p,vis[0][:,:,:,idx]) for idx,p in enumerate(named_preds) if p[0] in detect.toDetect]
+      tmp = [(p,vis[0][:,:,:,idx]) for idx,p in enumerate(named_preds) if p[0] in self.toDetect]
       named_preds, vis = [p[0] for p in tmp], [v[1] for v in tmp]
     return named_preds, vis
   
