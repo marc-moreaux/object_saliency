@@ -15,7 +15,13 @@ import model_param
 # tensorflow 
 n_epochs = 20
 momentum = 0.9
-batch_size = 50
+batch_size = 10
+
+
+
+
+
+
 
 
 
@@ -41,7 +47,8 @@ def print_test(epoch, test_accuracy, log_file):
   print 'epoch:'+str(epoch)+'\tacc:'+str(test_accuracy)
   print "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
 
-def my_train(mod_param, n_epochs=15):
+
+def my_train(mod_param, n_epochs=15, mod_param_old=None, param_idx_old=5, single_lbl_learning=-1):
   with open(mod_param.paths["log_file"], 'w',0) as log_file:
     # Tensorflow vars
     log_file =open(mod_param.paths["log_file"], 'w',0) 
@@ -55,13 +62,22 @@ def my_train(mod_param, n_epochs=15):
     # Init Tensorflow
     sess     = tf.InteractiveSession()
     saver    = tf.train.Saver( max_to_keep=50 )
+    if mod_param_old != None:
+      print "Debug: Restoring an other version of the net"
+      saver.restore(sess, mod_param_old.paths["save_model"]+"-"+str(param_idx_old))
+    
+    
     # train vars
     model_path = mod_param.paths["save_model"]
     n_labels   = mod_param.n_labels
-    pretrained_model_path = model_path+'-3'
     loss_tf               = mod_param.get_loss(output, labels_tf, conv6)
-    optimizer, train_op   = mod_param.get_optimizer(tf_learning_rate, loss_tf)
-    # loop varaibles
+    optimizer, train_op   = mod_param.get_optimizer(tf_learning_rate, loss_tf,single_lbl_learning)
+    
+    # Save classes names (for varing classes classifiers)
+    with open(mod_param.paths["save_model"]+"-classes.txt", "w") as file:
+      file.write(",".join(mod_param.labels))
+    
+    # loop variables
     tf.initialize_all_variables().run()
     loss_list = []
     iterations = 0
@@ -119,28 +135,90 @@ def my_train(mod_param, n_epochs=15):
 
 
 
-mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-4, 5e-5, 5e-7)
-my_train(mod_param, 45)
+
+mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM_W_S", 'rmsProp',   8e-6, 5e-5)
+my_train(mod_param, 20)
+
+
+# mod_param  = model_param.Model_params('PERSO1',   "VGG16_CAM5_S", 'rmsProp', 1e-5, 5e-5, 2e-7)
+# my_train(mod_param, 20)
+
+mod_param = model_param.Model_params('PERSO1',   "VGG16_CAM5_S", 'rmsProp', 1e-5, 5e-5, 2e-7)
+mod_param_old = model_param.Model_params('PERSO1',   "VGG16_CAM5_S", 'rmsProp', 1e-5, 5e-5, 2e-7)
+my_train(mod_param, 20, mod_param_old, 4, 2)
+
+
+# mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM_W_S", 'rmsProp',   8e-6, 5e-5)
+# my_train(mod_param, 20)
+
+mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM3b_S", 'rmsProp',   1e-5, 5e-5, 0, 1e-7)
+my_train(mod_param, 20)
+
+mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM5b_S", 'rmsProp',   1e-6, 5e-5, 1e-8)
+my_train(mod_param, 20)
+
+mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM5b_S", 'rmsProp',   1e-6, 5e-5, 1e-7)
+my_train(mod_param, 20)
+
+mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 0, 1e-8)
+my_train(mod_param, 20)
+
+mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5)
+my_train(mod_param, 20)
+
+mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 4e-5)
+my_train(mod_param, 20)
+
+# VOC2012.VGG16_CAM5b_S.rmsProp.1e-5.l2w.5e-5.l2gap.1e-7.txt        => 0.614 at epoch 19
+# VOC2012.VGG16_CAM_W_S.rmsProp.8e-6.l2.txt                         => 0.610 at epoch  4
+# VOC2012.VGG16_CAM7_S.rmsProp.8e-6.l2.txt                          => 0.582 at epoch  6
+# VOC2012.VGG16_CAM5b_S.rmsProp.1e-4.l2w.5e-5.l2gap.5e-7.txt        => 0.575 at epoch 17
+# VOC2012.VGG16_CAM5_S.rmsProp.8e-6.l2.txt                          => 0.572 at epoch 10
+# VOC2012.VGG16_CAM_S.rmsProp.8e-6.l2.txt                           => 0.572 at epoch 16
+# VOC2012.VGG16P_CAM7_S.rmsProp.8e-6.l2.txt                         => 0.571 at epoch 13
+# VOC2012.VGG16_CAM3b_S.rmsProp.1e-5.l2w.5e-5.l2gap.2e-7.txt        => 0.571 at epoch 12
+# VOC2012.VGG16_CAM7b_S.rmsProp.1e-4.l2w.5e-5.l2gap.5e-7.txt        => 0.570 at epoch 19
+# VOC2012.VGG16_CAM_W_S.rmsProp.8e-6.l2w.5e-5.txt                   => 0.569 at epoch  2
+# VOC2012.VGG16_CAM5b_S.rmsProp.1e-5.l2w.5e-5.l2gap.1e-8.txt        => 0.568 at epoch 13
+# VOC2012.VGG16_CAM9b_S.rmsProp.1e-4.l2w.5e-5.l2gap.5e-7.txt        => 0.568 at epoch 23
+# VOC2012.VGG16_CAM3b_S.rmsProp.1e-4.l2w.5e-5.l2gap.5e-7.txt        => 0.568 at epoch  6
+# VOC2012.VGG16P_CAM5_S.rmsProp.8e-6.l2.txt                         => 0.566 at epoch 15
+# VOC2012.VGG16_CAM5d_S.rmsProp.1e-4.l2w.5e-5.l2gap.5e-7.txt        => 0.565 at epoch 16
+# VOC2012.VGG16_CAM7b_S.rmsProp.1e-5.l2w.5e-5.l2gap.2e-7.txt        => 0.564 at epoch 10
+# VOC2012.VGG16_CAM9d_S.rmsProp.1e-4.l2w.5e-5.l2gap.5e-7.txt        => 0.564 at epoch 19
+# VOC2012.VGG16_CAM7d_S.rmsProp.1e-4.l2w.5e-5.l2gap.5e-7.txt        => 0.564 at epoch 29
+# VOC2012.VGG16_CAM3b_S.rmsProp.1e-5.l2w.5e-5.l1gap.1e-7.txt        => 0.563 at epoch 19
+# VOC2012.VGG16_CAM5b_S.rmsProp.1e-5.l2w.5e-5.l2gap.2e-7.txt        => 0.560 at epoch 11
+# VOC2012.VGG16_CAM5b_S.rmsProp.1e-5.l2w.5e-5.txt                   => 0.560 at epoch  7
+# VOC2012.VGG16_CAM5b_S.rmsProp.1e-5.l2w.5e-5.l1gap.1e-8.txt        => 0.559 at epoch 10
+# VOC2012.VGG16_CAM3d_S.rmsProp.1e-4.l2w.5e-5.l2gap.5e-7.txt        => 0.557 at epoch 22
+# VOC2012.VGG16P_CAM3_S.rmsProp.8e-6.l2.txt                         => 0.555 at epoch 30
+# VOC2012.VGG16_CAM3b_S.rmsProp.1e-5.l2w.5e-5.l2gap.5e-7.txt        => 0.542 at epoch  8
 
 
 
-mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 2e-7)
-my_train(mod_param, 45)
 
-mod_param  = model_param.Model_params("EXT_MNIST", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-8)
-my_train(mod_param, 15)
 
-mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-7)
-my_train(mod_param, 45)
+# mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-4, 5e-5, 5e-7)
+# my_train(mod_param, 45)
 
-mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-8)
-my_train(mod_param, 15)
+# mod_param  = model_param.Model_params("CALTECH256", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 2e-7)
+# my_train(mod_param, 45)
 
-mod_param  = model_param.Model_params("PERSO", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-7)
-my_train(mod_param, 45)
+# mod_param  = model_param.Model_params("EXT_MNIST", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-8)
+# my_train(mod_param, 15)
 
-mod_param  = model_param.Model_params("PERSO", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-8)
-my_train(mod_param, 15)
+# mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM5b_S", 'rmsProp',   1e-4, 5e-5, 5e-7)
+# my_train(mod_param, 45)
+
+# mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-8)
+# my_train(mod_param, 15)
+
+# mod_param  = model_param.Model_params("PERSO", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-7)
+# my_train(mod_param, 45)
+
+# mod_param  = model_param.Model_params("PERSO", "VGG16_CAM5b_S", 'rmsProp',   1e-5, 5e-5, 1e-8)
+# my_train(mod_param, 15)
 
 
 

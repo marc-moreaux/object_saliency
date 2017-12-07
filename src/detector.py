@@ -35,25 +35,25 @@ class Detector():
       return f.transpose(( 2,3,1,0 ))
 
   def conv_layer( self, bottom, name ):
-      with tf.variable_scope(name) as scope:
+    with tf.variable_scope(name) as scope:
 
-          w = self.get_conv_weight(name)
-          b = self.get_bias(name)
+      w = self.get_conv_weight(name)
+      b = self.get_bias(name)
 
-          conv_weights = tf.get_variable(
-                  "W",
-                  shape=w.shape,
-                  initializer=tf.constant_initializer(w)
-                  )
-          conv_biases = tf.get_variable(
-                  "b",
-                  shape=b.shape,
-                  initializer=tf.constant_initializer(b)
-                  )
+      conv_weights = tf.get_variable(
+              "W",
+              shape=w.shape,
+              initializer=tf.constant_initializer(w)
+              )
+      conv_biases = tf.get_variable(
+              "b",
+              shape=b.shape,
+              initializer=tf.constant_initializer(b)
+              )
 
-          conv = tf.nn.conv2d( bottom, conv_weights, [1,1,1,1], padding='SAME')
-          bias = tf.nn.bias_add( conv, conv_biases )
-          relu = tf.nn.relu( bias, name=name )
+      conv = tf.nn.conv2d( bottom, conv_weights, [1,1,1,1], padding='SAME')
+      bias = tf.nn.bias_add( conv, conv_biases )
+      relu = tf.nn.relu( bias, name=name )
 
       return relu
 
@@ -121,6 +121,9 @@ class Detector():
       return fc
 
   def _VGG16(self):
+    """
+    End of the original VGG16 network
+    """
     pool5   = tf.nn.max_pool(self.conv5_3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
                          padding='SAME', name='pool')
     fc6     = self.new_fc_layer( pool5, 1024,          'fc6' )
@@ -130,9 +133,15 @@ class Detector():
     return self.pool1, self.pool2, self.pool3, self.pool4, self.conv5_3, None, None, self.output
 
   def _VGG16_CAM_W_S(self, cam_size):
+    """
+    End of the VGG16 - CAM network, as in the paper
+
+    Params:
+    cam_size -- 2Dsize of the cnn kernel
+    """
     conv6 = self.new_conv_layer( self.conv5_3, [cam_size,cam_size,512,1024], "conv6")
     gap   = tf.reduce_mean( conv6, [1,2] )
-    with tf.variable_scope("gap"):
+    with tf.variable_scope("GAP"):
         gap_w = tf.get_variable(
                 "W",
                 shape=[1024, self.n_labels],
@@ -141,6 +150,13 @@ class Detector():
     return self.pool1, self.pool2, self.pool3, self.pool4, self.conv5_3, conv6, gap, output
 
   def _VGG16_CAMX_S(self, cam_filter_size, end_pooling=False):
+    """
+    End of the my version of VGG16-CAM net with one ccn
+
+    Params:
+    cam_filter_size -- 2Dsize of the cnn kernel
+    end_polling -- add a pooling after conv6, before GAP
+    """
     if end_pooling == True:
       pool5   = tf.nn.max_pool(self.conv5_3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
                                padding='SAME', name='pool5')
@@ -152,6 +168,13 @@ class Detector():
     return self.pool1, self.pool2, self.pool3, self.pool4, self.conv5_3, conv6, gap, output
 
   def _VGG16_CAMXX_S(self, cam_filter_size, end_pooling=False):
+    """
+    End of the my version of VGG16-CAM net with many ccns
+
+    Params:
+    cam_filter_size -- 2Dsize of the cnn kernel
+    end_polling -- add a pooling after conv6, before GAP
+    """
     in_to_conv6 = self.conv5_3
     if end_pooling == True:
       pool5   = tf.nn.max_pool(self.conv5_3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
@@ -220,48 +243,62 @@ class Detector():
 
 
       m_type = self.mod_param.mod_type
-      if m_type == model_param.Model_type.VGG16         :
-        return self._VGG16()
-      if m_type == model_param.Model_type.VGG16_CAM3_W_S :
-        return self._VGG16_CAM_W_S(3)
-      if m_type == model_param.Model_type.VGG16_CAM3_S   :
-        return self._VGG16_CAMX_S(3)
-      if m_type == model_param.Model_type.VGG16_CAM5_S  :
-        return self._VGG16_CAMX_S(5)
-      if m_type == model_param.Model_type.VGG16_CAM7_S  :
-        return self._VGG16_CAMX_S(7)
-      if m_type == model_param.Model_type.VGG16P_CAM3_S :
-        return self._VGG16_CAMX_S(3, True)
-      if m_type == model_param.Model_type.VGG16P_CAM5_S :
-        return self._VGG16_CAMX_S(5, True)
-      if m_type == model_param.Model_type.VGG16P_CAM7_S :
-        return self._VGG16_CAMX_S(7, True)
+      if m_type == model_param.Model_type.VGG16          : return self._VGG16()
+      if m_type == model_param.Model_type.VGG16_CAM_W_S  : return self._VGG16_CAM_W_S(3)
+      if m_type == model_param.Model_type.VGG16_CAM3_W_S : return self._VGG16_CAM_W_S(3)
+      if m_type == model_param.Model_type.VGG16_CAM3_S   : return self._VGG16_CAMX_S(3)
+      if m_type == model_param.Model_type.VGG16_CAM5_S   : return self._VGG16_CAMX_S(5)
+      if m_type == model_param.Model_type.VGG16_CAM7_S   : return self._VGG16_CAMX_S(7)
+      if m_type == model_param.Model_type.VGG16P_CAM3_S  : return self._VGG16_CAMX_S(3, True)
+      if m_type == model_param.Model_type.VGG16P_CAM5_S  : return self._VGG16_CAMX_S(5, True)
+      if m_type == model_param.Model_type.VGG16P_CAM7_S  : return self._VGG16_CAMX_S(7, True)
 
-      if m_type == model_param.Model_type.VGG16_CAM3e_S  :
-        return self._VGG16_CAMXX_S( [(3,5)] )
-      if m_type == model_param.Model_type.VGG16_CAM5b_S  :
-        return self._VGG16_CAMXX_S( [(5,2)] )
-      if m_type == model_param.Model_type.VGG16_CAM5e_S  :
-        return self._VGG16_CAMXX_S( [(5,5)] )
-      if m_type == model_param.Model_type.VGG16_CAM7e_S  :
-        return self._VGG16_CAMXX_S( [(7,5)] )
-      if m_type == model_param.Model_type.VGG16_CAM5a7a_S :
-        return self._VGG16_CAMXX_S( [(5,1),(7,1)] )
-      if m_type == model_param.Model_type.VGG16_CAM5b7a_S :
-        return self._VGG16_CAMXX_S( [(5,2),(7,1)] )
-      if m_type == model_param.Model_type.VGG16_CAM3a5a7a_S :
-        return self._VGG16_CAMXX_S( [(3,1),(5,1),(7,1)] )
+      if m_type == model_param.Model_type.VGG16_CAM3b_S   : return self._VGG16_CAMXX_S( [(3,2)] )
+      if m_type == model_param.Model_type.VGG16_CAM3d_S   : return self._VGG16_CAMXX_S( [(3,4)] )
+      if m_type == model_param.Model_type.VGG16_CAM3e_S   : return self._VGG16_CAMXX_S( [(3,5)] )
+      if m_type == model_param.Model_type.VGG16_CAM5b_S   : return self._VGG16_CAMXX_S( [(5,2)] )
+      if m_type == model_param.Model_type.VGG16_CAM5d_S   : return self._VGG16_CAMXX_S( [(5,4)] )
+      if m_type == model_param.Model_type.VGG16_CAM5e_S   : return self._VGG16_CAMXX_S( [(5,5)] )
+      if m_type == model_param.Model_type.VGG16_CAM7b_S   : return self._VGG16_CAMXX_S( [(7,2)] )
+      if m_type == model_param.Model_type.VGG16_CAM7d_S   : return self._VGG16_CAMXX_S( [(7,4)] )
+      if m_type == model_param.Model_type.VGG16_CAM7e_S   : return self._VGG16_CAMXX_S( [(7,5)] )
+      if m_type == model_param.Model_type.VGG16_CAM9b_S   : return self._VGG16_CAMXX_S( [(9,2)] )
+      if m_type == model_param.Model_type.VGG16_CAM9d_S   : return self._VGG16_CAMXX_S( [(9,4)] )
+      if m_type == model_param.Model_type.VGG16_CAM5a7a_S : return self._VGG16_CAMXX_S( [(5,1),(7,1)] )
+      if m_type == model_param.Model_type.VGG16_CAM5b7a_S : return self._VGG16_CAMXX_S( [(5,2),(7,1)] )
+      if m_type == model_param.Model_type.VGG16_CAM3a5a7a_S : return self._VGG16_CAMXX_S( [(3,1),(5,1),(7,1)] )
 
-  def get_classmap(self, label, conv6):
-      conv6_resized = tf.image.resize_bilinear( conv6, [224, 224] )
-      with tf.variable_scope("GAP", reuse=True):
-          label_w = tf.gather(tf.transpose(tf.get_variable("W")), label)
-          label_w = tf.reshape( label_w, [-1, 1024, 1] ) # [batch_size, 1024, 1]
+  def get_classmap(self, label, conv6, end_shape=[224,224], eval_all=False):
+      """
+      Retrieves a preview of the CAM layer, for desired label
 
-      conv6_resized = tf.reshape(conv6_resized, [-1, 224*224, 1024]) # [batch_size, 224*224, 1024]
+      Params:
+      label -- The label to visualize
+               if <-1>, returns all the classmaps
+      conv6 -- The conv6 weights results
+      end_shape -- the desired shape of visualisation
+      """
+      conv6_resized = tf.image.resize_bilinear( conv6, tuple(end_shape) )
 
-      classmap = tf.batch_matmul( conv6_resized, label_w )
-      classmap = tf.reshape( classmap, [-1, 224,224] )
+      # returns one visualisation
+      if eval_all == False:
+        with tf.variable_scope("GAP", reuse=True):
+            label_w = tf.gather(tf.transpose(tf.get_variable("W")), label)
+            label_w = tf.reshape( label_w, [-1, 1024, 1] ) # [batch_size, 1024, 1]
+
+        conv6_resized = tf.reshape(conv6_resized, [-1, np.prod(end_shape), 1024]) # [batch_size, 224*224, 1024]
+        classmap = tf.batch_matmul( conv6_resized, label_w )
+        classmap = tf.reshape( classmap, [-1,]+end_shape )
+      else :
+        # Return all 20 visualisations (for PASCAL)
+        with tf.variable_scope("GAP", reuse=True):
+          label_w = tf.get_variable("W")
+          label_w = tf.reshape( label_w, [-1, 1024, self.n_labels] ) # [batch_size, 1024, 1]
+
+        conv6_resized = tf.reshape(conv6_resized, [1, -1, 1024]) # [batch_size, 224*224, 1024]
+        classmap = tf.batch_matmul( conv6_resized, label_w )
+        classmap = tf.reshape( classmap, [-1]+end_shape+[self.n_labels] )
+
       return classmap
 
   def plot_conv_weights(self, layer_name):
@@ -277,6 +314,11 @@ class Detector():
 
 
 
-
+if __name__ == '__main__':
+  mod_param  = model_param.Model_params("VOC2012", "VGG16_CAM_W_S", 'rmsProp',   8e-6, 5e-5)
+  tf.reset_default_graph()
+  images_tf = tf.placeholder( tf.float32, [None, None, None, 3], name="images")
+  detector  = Detector(mod_param)
+  detector.inference(images_tf)
 
 

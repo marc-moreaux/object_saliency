@@ -64,7 +64,8 @@ d_detect = {
 'bathtub'            : [9000 , 3000, [False]*3*4 ] }
 
 
-
+good_classes = ["eyeglasses","people","applauding","laptop-101","brushing_teeth","computer-monitor","computer-keyboard",'computer-mouse',\
+"coffee-mug","texting_message","phoning","umbrella-101","drinking","reading","soda-can","holding_an_umbrella","cereal-box", "head-phones"]
 
 
 
