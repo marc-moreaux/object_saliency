@@ -3,6 +3,10 @@ from singleton import Singleton
 from forward_model import Forward_model
 import model_param
 import cv2
+import sys
+strUtilsPath = "../utils"
+if strUtilsPath not in sys.path:
+    sys.path.append( strUtilsPath )
 import my_images
 
 
@@ -42,6 +46,7 @@ class DetectObject:
     """
     if self.model == None:
       self.model = Forward_model(self.mod_param, 44)
+    print( "INF: loadDetector: model loaded..." )
   
   
   def detectInBuffer( self, npBuffer, restrict_detection=True, do_resize=True):
