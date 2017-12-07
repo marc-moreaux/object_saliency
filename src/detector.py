@@ -17,7 +17,7 @@ def concat_backward_comp(values, axis, name):
     # > tf.split(value, num_or_size_splits, axis)
     if tf.__version__ <= '0.12.0':
         return tf.concat(axis, values, name)
-    return tf.concat(values, axis, name):
+    return tf.concat(values, axis, name)
 
 class Detector():
   '''
