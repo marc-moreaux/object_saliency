@@ -217,8 +217,8 @@ class Detector():
 
   def inference( self, rgb, train=False ):
       rgb *= 255.
-      r, g, b = tf.split_backward_comp(rgb, 3, 3) # tf.split(3, 3, rgb) => tf.split(rgb, 3, 3) # 2017-12-07 Alma: for tensorflow > 0.12.0 
-      bgr = tf.concat_backward_comp(
+      r, g, b = split_backward_comp(rgb, 3, 3) # tf.split(3, 3, rgb) => tf.split(rgb, 3, 3) # 2017-12-07 Alma: for tensorflow > 0.12.0 
+      bgr = concat_backward_comp(
           [
               b-self.image_mean[0],
               g-self.image_mean[1],
