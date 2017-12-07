@@ -1,5 +1,8 @@
 import tensorflow as tf
-import cPickle as pickle
+try:
+    import cPickle as pickle
+except:
+    import _pickle as pickle # for python3.x
 import sys
 import os
 
@@ -82,7 +85,7 @@ class Model_params:
                 from perso_getter import get_batch
                 self.get_batch = get_batch
             else :
-                print "WARNING: could not import perso_getter"
+                print( "WARNING: could not import perso_getter" )
             paths = {
                 "save_model" : '../models/'+self.dataset+'/'+self.get_name()+'/model' ,
                 "log_file"     : "../results/"+self.get_name()+".txt"
@@ -94,7 +97,7 @@ class Model_params:
                 self.get_batch = perso1_getter.get_batch
                 self.labels = perso1_getter.getter_inst.classes
             else :
-                print "WARNING: could not import perso_getter"
+                print( "WARNING: could not import perso_getter" )
             paths = {
                 "save_model" : '../models/'+self.dataset+'/'+self.get_name()+'/model' ,
                 "log_file"     : "../results/"+self.get_name()+".txt"
@@ -105,7 +108,7 @@ class Model_params:
                 from voc2012_getter import get_batch
                 self.get_batch = get_batch
             else :
-                print "WARNING: could not import VOC2012_getter"
+                print( "WARNING: could not import VOC2012_getter" )
             paths = {
                 "save_model" : '../models/'+self.dataset+'/'+self.get_name()+'/model' ,
                 "log_file"     : "../results/"+self.get_name()+".txt"
@@ -116,7 +119,7 @@ class Model_params:
                 from caltech256_getter import get_batch
                 self.get_batch = get_batch
             else :
-                print "WARNING: could not import caltech256_getter"
+                print( "WARNING: could not import caltech256_getter" )
             paths = {
                 "save_model" : '../models/'+self.dataset+'/'+self.get_name()+'/model' ,
                 "log_file"     : "../results/"+self.get_name()+".txt"
@@ -128,7 +131,7 @@ class Model_params:
                 self.get_batch    = mnist_getter.get_batch_224
                 self.epoch_size = mnist_getter.EPOCH_SIZE
             else :
-                print "WARNING: could not import mnist_getter"
+                print( "WARNING: could not import mnist_getter" )
             paths = {
                 "save_model" : '../models/'+self.dataset+'/'+self.get_name()+'/model' ,
                 "log_file"     : "../results/"+self.get_name()+".txt"
@@ -139,7 +142,7 @@ class Model_params:
         # Make <paths["save_model"]> a directory if not existing
         save_dir = "/".join(paths["save_model"].split('/')[:-1])
         if not os.path.isdir(save_dir):
-            print "Created a new directory at : "+save_dir
+            print( "Created a new directory at : "+save_dir )
             os.makedirs(save_dir)
          
         self.paths = paths
@@ -180,11 +183,11 @@ class Model_params:
     
     
         if self.dataset == DB_type.ACTION40 :
-            print "NOT IMPLEMENTED YET"
+            print( "NOT IMPLEMENTED YET" )
             raise NotImplementedError
     
         if self.dataset == DB_type.CALTECH256 :
-            print "NOT IMPLEMENTED YET"
+            print( "NOT IMPLEMENTED YET" )
             raise NotImplementedError
     
         return trainset, testset
@@ -206,7 +209,7 @@ class Model_params:
             }.get(self.optimizer)
         
         grads_and_vars = optimizer.compute_gradients( loss_tf )
-        print [gv[1].name for gv in grads_and_vars]
+        print( [gv[1].name for gv in grads_and_vars] )
         
         # set <grads_and_vars>
         if  self.mod_type == Model_type.VGG16:
@@ -239,12 +242,8 @@ class Model_params:
 
         # Only modify the desired idx, nothing else changes in the network
         if label_idx >= 0:
-            print "Debug: only going to train one class"
-            print [
-                gv[1].name 
-                for gv in grads_and_vars 
-                if ('conv6' in gv[1].name)
-            ] 
+            print( "Debug: only going to train one class" )
+            print( [gv[1].name for gv in grads_and_vars  if ('conv6' in gv[1].name) ] )
             one_hot_vec = tf.one_hot(label_idx, self.n_labels)
             grads_and_vars = [
                 (gv[0]*one_hot_vec, gv[1]) 
@@ -293,20 +292,20 @@ class Model_params:
             tf_loss       += weight_decay
         if self.l2_gap > 0:
             if conv6 == None:
-                print "WARNING : found no conv6 vars layers on model..."
+                print( "WARNING : found no conv6 vars layers on model..." )
             if type(conv6) != type(list()):
                 conv6 = [conv6]
-            print "Applying the conv6 loss (l2)"+str(conv6)
+            print( "Applying the conv6 loss (l2)"+str(conv6) )
             tf_loss += tf.reduce_mean(tf.pack([
                             tf.nn.l2_loss(x) 
                             for x in conv6
                         ])) * self.l2_gap
         if self.l1_gap > 0:
             if conv6 == None:
-                print "WARNING : found no conv6 vars layers on model..."
+                print( "WARNING : found no conv6 vars layers on model..." )
             if type(conv6) != type(list()):
                 conv6 = [conv6]
-            print "Applying the conv6 loss (l1)"+str(conv6)
+            print( "Applying the conv6 loss (l1)"+str(conv6) )
             tf_loss += tf.reduce_mean(tf.pack([
                             tf.abs(x) 
                             for x in conv6

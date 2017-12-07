@@ -50,7 +50,7 @@ class DetectObject:
     """
     named_preds, vis = self.model.forward_image(npBuffer,-1, do_resize)
     if restrict_detection == True:
-      print vis[0].shape
+      print( vis[0].shape )
       
       tmp = [(p,vis[0][:,:,:,idx]) for idx,p in enumerate(named_preds) if p[0] in detect.toDetect]
       named_preds, vis = [p[0] for p in tmp], [v[1] for v in tmp]
@@ -88,7 +88,7 @@ detect = DetectObject.Instance()
 for path in pictures:
   preds = detect.detectInFilename(path)[0]
   preds = sorted(preds, key=lambda a:a[1], reverse=True)
-  print preds
+  print( preds )
 
 
 
