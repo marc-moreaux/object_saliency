@@ -13,7 +13,7 @@ def split_backward_comp(value, num_or_size_splits, axis):
         return tf.split(axis, num_or_size_splits, value)
     return tf.split(value, num_or_size_splits, axis)
 
-def concat_backward_comp(values, axis, name):
+def concat_backward_comp(values, axis, name='concat'):
     # Tensorflow versions < 0.12.0:  tf.split(axis, num_or_size_splits, value)
     # > tf.split(value, num_or_size_splits, axis)
     if tf.__version__ <= '0.12.0':
